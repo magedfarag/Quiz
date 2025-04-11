@@ -1,0 +1,147 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "name": "Admin",
+      "email": "admin@quizzy.com",
+      "password": "$2a$10$EXAMPLEHASHEDPASSWORD",
+      "role": "Admin",
+      "isVerified": true,
+      "createdAt": "2023-01-01T00:00:00Z",
+      "permissions": {
+        "canEditQuestions": true,
+        "canManageUsers": true,
+        "canViewAnalytics": true,
+        "canModifySettings": true
+      }
+    }
+  ],
+  "questions": [
+    {
+      "id": "q1",
+      "type": "multiple_choice",
+      "question": "What is 2 + 2?",
+      "options": [
+        "3",
+        "4",
+        "5",
+        "6"
+      ],
+      "correctAnswer": "4",
+      "category": "Math",
+      "difficulty": "easy",
+      "createdAt": "2023-01-01T00:00:00Z"
+    },
+    {
+      "id": "q2",
+      "type": "multiple_choice",
+      "question": "What is the capital of France?",
+      "options": [
+        "Berlin",
+        "Madrid",
+        "Paris",
+        "Rome"
+      ],
+      "correctAnswer": "Paris",
+      "category": "Geography",
+      "difficulty": "medium",
+      "createdAt": "2023-01-01T00:00:00Z"
+    },
+    {
+      "id": "q3",
+      "type": "multiple_choice",
+      "question": "Which planet is known as the Red Planet?",
+      "options": [
+        "Venus",
+        "Mars",
+        "Jupiter",
+        "Saturn"
+      ],
+      "correctAnswer": "Mars",
+      "category": "Science",
+      "difficulty": "medium",
+      "createdAt": "2023-01-01T00:00:00Z"
+    },
+    {
+      "id": "q4",
+      "type": "multiple_choice",
+      "question": "What is the largest mammal in the world?",
+      "options": [
+        "African Elephant",
+        "Blue Whale",
+        "Giraffe",
+        "Hippopotamus"
+      ],
+      "correctAnswer": "Blue Whale",
+      "category": "Science",
+      "difficulty": "easy",
+      "createdAt": "2023-01-01T00:00:00Z"
+    }
+  ],
+  "results": [
+    {
+      "id": 1,
+      "studentName": "ali",
+      "score": 0,
+      "totalQuestions": 1,
+      "answers": [],
+      "timestamp": 1744405383980
+    },
+    {
+      "id": 2,
+      "studentName": "ali",
+      "score": 0,
+      "totalQuestions": 1,
+      "answers": [],
+      "timestamp": 1744405930165
+    },
+    {
+      "id": 3,
+      "studentName": "ali",
+      "score": 0,
+      "totalQuestions": 1,
+      "answers": [],
+      "timestamp": 1744407256355
+    },
+    {
+      "id": 4,
+      "studentName": "ali",
+      "score": 0,
+      "totalQuestions": 1,
+      "answers": [
+        "4"
+      ],
+      "timestamp": 1744410484189
+    },
+    {
+      "id": 5,
+      "studentName": "ali",
+      "score": 0,
+      "totalQuestions": 1,
+      "answers": [
+        "4"
+      ],
+      "timestamp": 1744410537168
+    },
+    {
+      "id": 6,
+      "studentName": "ali",
+      "score": 1,
+      "totalQuestions": 4,
+      "answers": [
+        "4",
+        "Rome",
+        "Saturn",
+        "Hippopotamus"
+      ],
+      "timestamp": 1744410725915
+    }
+  ],
+  "settings": {
+    "quizTimer": 30,
+    "maxQuestions": 10,
+    "passingScore": 70,
+    "requireEmailVerification": true
+  },
+  "logs": []
+}
