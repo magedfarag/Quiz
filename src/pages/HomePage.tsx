@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { fetchQuestions } from '../api/quiz';
-import { Brain, Star, Award, Rocket } from 'lucide-react';
+import { Brain, Star, Award, Rocket, Shield } from 'lucide-react';
 import { useSoundEffects, preloadSounds } from '../utils/sounds';
 
 const HomePage: React.FC = () => {
@@ -35,6 +35,17 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-primary-light p-8">
+      {/* Admin Quick Access */}
+      <div className="absolute top-4 right-4 flex items-center gap-2">
+        <Link
+          to="/admin/login"
+          className="flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm hover:bg-white rounded-xl shadow-lg transition duration-300 group"
+        >
+          <Shield className="w-5 h-5 text-accent-purple group-hover:scale-110 transition-transform" />
+          <span className="text-sm font-medium text-gray-700">Admin Portal</span>
+        </Link>
+      </div>
+      
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12 animate-float">

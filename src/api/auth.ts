@@ -1,7 +1,7 @@
-const API_BASE_URL = 'http://localhost:3001/api';
+import { API_URL } from './admin';
 
-export const adminLogin = async (email, password) => {
-  const response = await fetch(`${API_BASE_URL}/admin/login`, {
+export const adminLogin = async (email: string, password: string) => {
+  const response = await fetch(`${API_URL}/admin/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password })

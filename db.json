@@ -2,18 +2,35 @@
   "users": [
     {
       "id": "1",
-      "name": "Admin",
-      "email": "admin@quizzy.com",
-      "password": "$2a$10$EXAMPLEHASHEDPASSWORD",
-      "role": "Admin",
-      "isVerified": true,
-      "createdAt": "2023-01-01T00:00:00Z",
-      "permissions": {
-        "canEditQuestions": true,
-        "canManageUsers": true,
-        "canViewAnalytics": true,
-        "canModifySettings": true
-      }
+      "name": "Admin User",
+      "email": "admin@test.com",
+      "password": "admin123",
+      "role": "admin",
+      "status": "active",
+      "quizzesCompleted": 0,
+      "averageScore": 0,
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2025-04-13T04:49:28.447Z"
+    },
+    {
+      "id": "2",
+      "name": "John Doe",
+      "email": "john@test.com",
+      "role": "Student",
+      "status": "active",
+      "quizzesCompleted": 5,
+      "averageScore": 80,
+      "createdAt": "2024-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "3",
+      "name": "Jane Smith",
+      "email": "jane@test.com",
+      "role": "Student",
+      "status": "active",
+      "quizzesCompleted": 3,
+      "averageScore": 90,
+      "createdAt": "2024-01-01T00:00:00.000Z"
     }
   ],
   "questions": [
@@ -135,6 +152,45 @@
         "Hippopotamus"
       ],
       "timestamp": 1744410725915
+    },
+    {
+      "id": 7,
+      "studentName": "ali",
+      "score": 4,
+      "totalQuestions": 4,
+      "answers": [
+        "4",
+        "Paris",
+        "Mars",
+        "Blue Whale"
+      ],
+      "timestamp": 1744411758616
+    },
+    {
+      "id": 8,
+      "studentName": "ali",
+      "score": 1,
+      "totalQuestions": 4,
+      "answers": [
+        "4",
+        "Rome",
+        "Saturn",
+        "Hippopotamus"
+      ],
+      "timestamp": 1744465924331
+    },
+    {
+      "id": 9,
+      "studentName": "ahmed",
+      "score": 4,
+      "totalQuestions": 4,
+      "answers": [
+        "4",
+        "Paris",
+        "Mars",
+        "Blue Whale"
+      ],
+      "timestamp": 1744525028615
     }
   ],
   "settings": {
@@ -143,5 +199,135 @@
     "passingScore": 70,
     "requireEmailVerification": true
   },
-  "logs": []
+  "logs": [],
+  "quizzes": [
+    {
+      "id": "1",
+      "title": "General Knowledge Quiz",
+      "description": "Test your knowledge across various subjects",
+      "questions": [
+        "q1",
+        "q2",
+        "q3",
+        "q4"
+      ],
+      "isPublished": true,
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z",
+      "category": "Mixed",
+      "difficulty": "medium",
+      "timeLimit": 300,
+      "passScore": 70,
+      "validationRules": {
+        "minQuestions": 4,
+        "requireExplanations": false,
+        "allowRetry": true
+      }
+    },
+    {
+      "id": "1744519677243",
+      "title": "Advanced Quiz",
+      "description": "This is an advanced quiz for smart students",
+      "questions": [
+        {
+          "id": "1744519632091",
+          "text": "This is a test question 1",
+          "options": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ],
+          "correctAnswer": "1",
+          "type": "multiple_choice",
+          "difficulty": "medium"
+        },
+        {
+          "id": "1744519645932",
+          "text": "This is a test question 2",
+          "options": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ],
+          "correctAnswer": "2",
+          "type": "multiple_choice",
+          "difficulty": "medium"
+        },
+        {
+          "id": "1744519658331",
+          "text": "This is a test question 3",
+          "options": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ],
+          "correctAnswer": "3",
+          "type": "multiple_choice",
+          "difficulty": "medium"
+        },
+        {
+          "id": "1744519671680",
+          "text": "This is a test question 4",
+          "options": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ],
+          "correctAnswer": "4",
+          "type": "multiple_choice",
+          "difficulty": "medium"
+        }
+      ],
+      "isPublished": true,
+      "createdAt": "2025-04-13T04:47:57.243Z",
+      "updatedAt": "2025-04-13T04:48:20.397Z"
+    }
+  ],
+  "questionQuizRelations": [
+    {
+      "questionId": "q1",
+      "quizIds": [
+        "1"
+      ]
+    },
+    {
+      "questionId": "q2",
+      "quizIds": [
+        "1"
+      ]
+    },
+    {
+      "questionId": "q3",
+      "quizIds": [
+        "1"
+      ]
+    },
+    {
+      "questionId": "q4",
+      "quizIds": [
+        "1"
+      ]
+    }
+  ],
+  "achievements": [
+    {
+      "id": 1,
+      "name": "First Step",
+      "description": "Completed the first quiz."
+    },
+    {
+      "id": 2,
+      "name": "Perfect Score",
+      "description": "Achieved a perfect score in a quiz."
+    }
+  ],
+  "adminStats": {
+    "totalQuizzes": 10,
+    "activeUsers": 25,
+    "averageScore": 85
+  }
 }

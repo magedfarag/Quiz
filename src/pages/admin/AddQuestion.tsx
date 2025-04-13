@@ -1,23 +1,51 @@
-// New component for question creation
-import { QuestionTypeSelector } from '@/components/QuestionType';
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Save, Eye, Plus, Trash2 } from 'lucide-react';
+import { DashboardCard } from '@/components/admin/DashboardCard';
 
 export default function AddQuestion() {
-  const [type, setType] = useState<QuestionType>('multiple_choice');
-  
-  return (
-    <div>
-      <select 
-        value={type}
-        onChange={(e) => setType(e.target.value as QuestionType)}
-      >
-        <option value="multiple_choice">Multiple Choice</option>
-        <option value="true_false">True/False</option>
-        <option value="short_answer">Short Answer</option>
-      </select>
+  const [showPreview, setShowPreview] = useState(false);
+  const [question, setQuestion] = useState({
+    text: '',
+    options: ['', '', '', ''],
+    correctAnswer: 0,
+    points: 1
+  });
 
-      {type === 'multiple_choice' && <MultipleChoiceForm />}
-      {type === 'true_false' && <TrueFalseForm />}
-      {type === 'short_answer' && <ShortAnswerForm />}
-    </div>
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      <header className="flex justify-between items-center mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-800">Add Question</h1>
+          <p className="text-gray-600 mt-2">Create a new quiz question</p>
+        </div>
+        <div className="flex space-x-3">
+          <button className="btn-secondary" onClick={() => setShowPreview(!showPreview)}>
+            <Eye className="w-4 h-4 mr-2" />
+            Preview
+          </button>
+          <button className="btn-primary">
+            <Save className="w-4 h-4 mr-2" />
+            Save Question
+          </button>
+        </div>
+      </header>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <DashboardCard title="Question Details">
+          {/* Question form implementation */}
+        </DashboardCard>
+
+        {showPreview && (
+          <DashboardCard title="Preview">
+            {/* Preview implementation */}
+          </DashboardCard>
+        )}
+      </div>
+    </motion.div>
   );
 }

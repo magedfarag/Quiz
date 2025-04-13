@@ -4,14 +4,29 @@ import { Award, Download, Mail, Home, Star, Trophy, Target, ChevronDown, Check, 
 import confetti from 'canvas-confetti';
 import { generateQuizReport } from '../api/reports';
 import { sendQuizResults } from '../services/emailService';
-import { achievements } from '../data/quizData';
 import { useSoundEffects } from '../utils/sounds';
+
+interface Achievement {
+  id: number;
+  name: string;
+  description: string;
+}
 
 const ResultsPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { studentName, score, totalQuestions, answers, questions } = location.state || {};
+  const { studentName, score, totalQuestions, answers, questions, isPreview } = location.state || {};
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
   
+  useEffect(() => {
+    if (!isPreview) {
+      fetch('http://localhost:3001/api/achievements')
+        .then(res => res.json())
+        .then(data => setAchievements(data))
+        .catch(console.error);
+    }
+  }, [isPreview]);
+
   // Redirect if quiz data is missing
   useEffect(() => {
     if (score === undefined || !totalQuestions || !answers || !questions) {
@@ -129,6 +144,18 @@ const ResultsPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-primary-light p-8">
       <div className="max-w-4xl mx-auto">
+        {isPreview && (
+          <div className="mb-8 p-4 bg-yellow-50 text-yellow-700 rounded-lg flex items-center justify-between">
+            <span>Preview Mode - These results are not saved</span>
+            <button 
+              onClick={() => navigate('/admin/quiz-management')}
+              className="px-4 py-2 bg-yellow-100 rounded-lg hover:bg-yellow-200"
+            >
+              Back to Quiz Management
+            </button>
+          </div>
+        )}
+
         {/* Main Result Card */}
         <div className="bg-white rounded-2xl shadow-xl p-8 mb-8 animate-pop">
           <div className="text-center mb-8">
@@ -253,7 +280,7 @@ const ResultsPage: React.FC = () => {
         </Link>
 
         {/* Email Dialog */}
-        {showEmailDialog && (
+        {showEmailDialog && !isPreview && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl p-6 max-w-md w-full animate-pop">
               <h3 className="text-xl font-bold mb-4">Email Your Results</h3>

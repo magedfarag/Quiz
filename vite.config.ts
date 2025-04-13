@@ -13,6 +13,9 @@ export default defineConfig({
       '@pages': path.resolve(__dirname, './src/pages'),
     },
   },
+  optimizeDeps: {
+    include: ['react-beautiful-dnd']
+  },
   test: {
     globals: true,
     environment: 'jsdom',

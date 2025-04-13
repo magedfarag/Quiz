@@ -1,49 +1,92 @@
-import React from 'react';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import { Line, Bar, Doughnut } from 'react-chartjs-2';
 
-export const BarChart = ({ data }) => {
-  const maxValue = Math.max(...data.map(item => item.value), 0);
-  
-  return (
-    <div className="space-y-2">
-      {data.map((item, index) => (
-        <div key={index} className="flex items-center">
-          <div className="w-24 text-sm text-gray-600">{item.label}</div>
-          <div className="flex-1">
-            <div 
-              className="bg-blue-500 h-6 rounded-md"
-              style={{ width: `${(item.value / maxValue) * 100}%` }}
-            ></div>
-          </div>
-          <div className="w-12 text-right text-sm font-medium">
-            {item.value.toFixed(1)}%
-          </div>
-        </div>
-      ))}
-    </div>
-  );
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
+interface ChartData {
+  label: string;
+  value: number;
+}
+
+interface ChartProps {
+  data: ChartData[];
+  xAxis?: string;
+  yAxis?: string;
+  height?: number;
+}
+
+export const LineChart = ({ data, xAxis = 'Date', yAxis = 'Value', height = 300 }: ChartProps) => {
+  const chartData = {
+    labels: data.map(d => d.label),
+    datasets: [{
+      label: yAxis,
+      data: data.map(d => d.value),
+      borderColor: 'rgb(76, 201, 240)',
+      tension: 0.1
+    }]
+  };
+
+  return <Line data={chartData} height={height} options={{ responsive: true }} />;
 };
 
-export const PieChart = ({ data }) => {
-  const total = data.reduce((sum, item) => sum + item.value, 0);
-  let cumulativePercent = 0;
-  
-  return (
-    <div className="relative w-full h-64">
-      {data.map((item, index) => {
-        const percent = (item.value / total) * 100;
-        const start = cumulativePercent;
-        cumulativePercent += percent;
-        
-        return (
-          <div
-            key={index}
-            className="absolute inset-0"
-            style={{
-              clipPath: `conic-gradient(from ${start}%, #${Math.floor(Math.random()*16777215).toString(16)} ${percent}%)`
-            }}
-          ></div>
-        );
-      })}
-    </div>
-  );
+export const BarChart = ({ data, xAxis = 'Category', yAxis = 'Value', height = 300 }: ChartProps) => {
+  const chartData = {
+    labels: data.map(d => d.label),
+    datasets: [{
+      label: yAxis,
+      data: data.map(d => d.value),
+      backgroundColor: 'rgba(76, 201, 240, 0.5)',
+      borderColor: 'rgb(76, 201, 240)',
+      borderWidth: 1
+    }]
+  };
+
+  return <Bar data={chartData} height={height} options={{ responsive: true }} />;
+};
+
+export const DoughnutChart = ({ data, height = 300 }: ChartProps) => {
+  const chartData = {
+    labels: data.map(d => d.label),
+    datasets: [{
+      data: data.map(d => d.value),
+      backgroundColor: [
+        'rgba(76, 201, 240, 0.5)',
+        'rgba(67, 97, 238, 0.5)',
+        'rgba(123, 44, 191, 0.5)',
+        'rgba(45, 198, 83, 0.5)',
+        'rgba(255, 145, 77, 0.5)'
+      ],
+      borderColor: [
+        'rgb(76, 201, 240)',
+        'rgb(67, 97, 238)',
+        'rgb(123, 44, 191)',
+        'rgb(45, 198, 83)',
+        'rgb(255, 145, 77)'
+      ],
+      borderWidth: 1
+    }]
+  };
+
+  return <Doughnut data={chartData} height={height} options={{ responsive: true }} />;
 };

@@ -68,6 +68,10 @@ const router = createBrowserRouter([
     element: <EditUser />,
   },
   {
+    path: 'admin/users/:id/edit',
+    element: <EditUser />
+  },
+  {
     path: '/admin/analytics',
     element: <AdminAnalytics />,
   },

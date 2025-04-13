@@ -1,4 +1,5 @@
 export type QuestionType = 'multiple_choice' | 'true_false' | 'short_answer';
+export type DifficultyLevel = 'easy' | 'medium' | 'hard';
 
 export interface QuizQuestion {
   id: string;
@@ -8,7 +9,26 @@ export interface QuizQuestion {
   correctAnswer?: string; // For short answer and true/false
   answer?: boolean; // For true/false
   category?: string;
-  difficulty?: 'easy' | 'medium' | 'hard';
+  difficulty?: DifficultyLevel;
+}
+
+export interface Quiz {
+  id: string;
+  title: string;
+  description?: string;
+  timeLimit: number;
+  passingScore: number;
+  questions: {
+    id: string;
+    text: string;
+    options: string[];
+    correctAnswer: string;
+    type?: QuestionType;
+    difficulty?: DifficultyLevel;
+  }[];
+  isPublished: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface QuizResultData {
