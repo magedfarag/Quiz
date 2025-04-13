@@ -4,7 +4,8 @@ export type DifficultyLevel = 'easy' | 'medium' | 'hard';
 export interface QuizQuestion {
   id: string;
   type: QuestionType;
-  question: string;
+  question?: string;
+  text?: string;
   options?: string[]; // For multiple choice
   correctAnswer?: string; // For short answer and true/false
   answer?: boolean; // For true/false

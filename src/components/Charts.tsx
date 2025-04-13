@@ -24,45 +24,101 @@ ChartJS.register(
   Legend
 );
 
-interface ChartData {
-  label: string;
-  value: number;
-}
-
 interface ChartProps {
-  data: ChartData[];
+  data: any[];
   xAxis?: string;
   yAxis?: string;
   height?: number;
 }
 
-export const LineChart = ({ data, xAxis = 'Date', yAxis = 'Value', height = 300 }: ChartProps) => {
+export const LineChart = ({ data, xAxis = 'date', yAxis = 'value', height = 300 }: ChartProps) => {
   const chartData = {
-    labels: data.map(d => d.label),
+    labels: data.map(d => d[xAxis]),
     datasets: [{
       label: yAxis,
-      data: data.map(d => d.value),
+      data: data.map(d => d[yAxis]),
       borderColor: 'rgb(76, 201, 240)',
-      tension: 0.1
+      backgroundColor: 'rgba(76, 201, 240, 0.1)',
+      tension: 0.1,
+      fill: true
     }]
   };
 
-  return <Line data={chartData} height={height} options={{ responsive: true }} />;
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top' as const,
+      },
+      tooltip: {
+        mode: 'index' as const,
+        intersect: false,
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: 'rgba(0, 0, 0, 0.05)'
+        }
+      },
+      x: {
+        grid: {
+          display: false
+        }
+      }
+    }
+  };
+
+  return (
+    <div style={{ height }}>
+      <Line data={chartData} options={options} />
+    </div>
+  );
 };
 
-export const BarChart = ({ data, xAxis = 'Category', yAxis = 'Value', height = 300 }: ChartProps) => {
+export const BarChart = ({ data, xAxis = 'score', yAxis = 'count', height = 300 }: ChartProps) => {
   const chartData = {
-    labels: data.map(d => d.label),
+    labels: data.map(d => `${d[xAxis]}%`),
     datasets: [{
       label: yAxis,
-      data: data.map(d => d.value),
+      data: data.map(d => d[yAxis]),
       backgroundColor: 'rgba(76, 201, 240, 0.5)',
       borderColor: 'rgb(76, 201, 240)',
-      borderWidth: 1
+      borderWidth: 1,
+      borderRadius: 4
     }]
   };
 
-  return <Bar data={chartData} height={height} options={{ responsive: true }} />;
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: 'rgba(0, 0, 0, 0.05)'
+        }
+      },
+      x: {
+        grid: {
+          display: false
+        }
+      }
+    }
+  };
+
+  return (
+    <div style={{ height }}>
+      <Bar data={chartData} options={options} />
+    </div>
+  );
 };
 
 export const DoughnutChart = ({ data, height = 300 }: ChartProps) => {
@@ -71,11 +127,11 @@ export const DoughnutChart = ({ data, height = 300 }: ChartProps) => {
     datasets: [{
       data: data.map(d => d.value),
       backgroundColor: [
-        'rgba(76, 201, 240, 0.5)',
-        'rgba(67, 97, 238, 0.5)',
-        'rgba(123, 44, 191, 0.5)',
-        'rgba(45, 198, 83, 0.5)',
-        'rgba(255, 145, 77, 0.5)'
+        'rgba(76, 201, 240, 0.7)',
+        'rgba(67, 97, 238, 0.7)',
+        'rgba(123, 44, 191, 0.7)',
+        'rgba(45, 198, 83, 0.7)',
+        'rgba(255, 145, 77, 0.7)'
       ],
       borderColor: [
         'rgb(76, 201, 240)',
@@ -88,5 +144,23 @@ export const DoughnutChart = ({ data, height = 300 }: ChartProps) => {
     }]
   };
 
-  return <Doughnut data={chartData} height={height} options={{ responsive: true }} />;
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'right' as const,
+        labels: {
+          boxWidth: 12,
+          padding: 15
+        }
+      }
+    }
+  };
+
+  return (
+    <div style={{ height }}>
+      <Doughnut data={chartData} options={options} />
+    </div>
+  );
 };

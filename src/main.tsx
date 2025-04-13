@@ -1,31 +1,41 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import ErrorBoundary from '@components/ErrorBoundary';
+import ErrorBoundary from '../src/components/ErrorBoundary';
 import HomePage from './pages/HomePage';
 import QuizPage from './pages/QuizPage';
 import ResultsPage from './pages/ResultsPage';
-import AdminLogin from '@pages/admin/AdminLogin';
-import AdminDashboard from '@pages/admin/AdminDashboard';
-import AdminQuizManagement from '@pages/admin/AdminQuizManagement';
-import AdminUserManagement from '@pages/admin/AdminUserManagement';
-import AdminAnalytics from '@pages/admin/AdminAnalytics';
-import AdminSettings from '@pages/admin/AdminSettings';
-import AdminAuditLogs from '@pages/admin/AdminAuditLogs';
-import AddQuiz from '@pages/admin/AddQuiz';
-import EditQuiz from '@pages/admin/EditQuiz';
-import AddUser from '@pages/admin/AddUser';
-import EditUser from '@pages/admin/EditUser';
-import NotFound from '@pages/NotFound';
-import Forbidden from '@pages/Forbidden';
-import ServerError from '@pages/ServerError';
-import '@/index.css';
+import AdminLogin from './pages/admin/AdminLogin';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminQuizManagement from './pages/admin/AdminQuizManagement';
+import AdminUserManagement from './pages/admin/AdminUserManagement';
+import AdminAnalytics from './pages/admin/AdminAnalytics';
+import AdminSettings from './pages/admin/AdminSettings';
+import AdminAuditLogs from './pages/admin/AdminAuditLogs';
+import AddQuiz from './pages/admin/AddQuiz';
+import EditQuiz from './pages/admin/EditQuiz';
+import AddUser from './pages/admin/AddUser';
+import EditUser from './pages/admin/EditUser';
+import NotFound from './pages/NotFound';
+import Forbidden from './pages/Forbidden';
+import ServerError from './pages/ServerError';
+import QuizOverview from './pages/student/QuizOverview';
+import QuizSelection from './pages/student/QuizSelection';
+import './index.css';
 
 const router = createBrowserRouter([
   {
     path: '/',
     element: <HomePage />,
     errorElement: <NotFound />
+  },
+  {
+    path: '/quiz-selection',
+    element: <QuizSelection />,
+  },
+  {
+    path: '/quiz-overview',
+    element: <QuizOverview />,
   },
   {
     path: '/quiz',
@@ -101,7 +111,7 @@ const router = createBrowserRouter([
   }
 ], {
   future: {
-    v7_startTransition: true,
+    // Remove v7 experimental features
     v7_relativeSplatPath: true,
   },
 });

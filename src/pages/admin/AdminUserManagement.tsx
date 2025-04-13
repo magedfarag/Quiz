@@ -66,6 +66,16 @@ const AdminUserManagement: React.FC = () => {
     }
   };
 
+  const filteredUsers = users.filter(user => {
+    const query = searchQuery.toLowerCase();
+    return (
+      (user.username?.toLowerCase() || '').includes(query) ||
+      (user.email?.toLowerCase() || '').includes(query) ||
+      (user.role?.toLowerCase() || '').includes(query) ||
+      (user.status?.toLowerCase() || '').includes(query)
+    );
+  });
+
   if (isLoading) {
     return (
       <AdminLayout>
@@ -154,13 +164,13 @@ const AdminUserManagement: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                  {users.map((user) => (
+                  {filteredUsers.map((user) => (
                     <tr
                       key={user.id}
                       className="hover:bg-gray-50 animate-slide-in"
                       style={{ animationDelay: `${user.id * 0.1}s` }}
                     >
-                      <td className="px-4 py-3">{user.name}</td>
+                      <td className="px-4 py-3">{user.username}</td>
                       <td className="px-4 py-3">{user.quizzesCompleted}</td>
                       <td className="px-4 py-3">
                         <span className={`px-2 py-1 rounded-full text-sm ${

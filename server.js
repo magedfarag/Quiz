@@ -164,15 +164,61 @@ app.get('/api/questions', (req, res, next) => {
 // Submit quiz results
 app.post('/api/results', (req, res, next) => {
   try {
-    const { studentName, score, totalQuestions, answers, timestamp } = req.body;
+    const { studentName, score, totalQuestions, answers, timestamp, timeRemaining } = req.body;
     if (!studentName || score === undefined || !totalQuestions || !answers || !timestamp) {
       return res.status(400).json({ error: 'Invalid request body' });
     }
 
     const db = readDatabase();
-    const newResult = { id: db.results.length + 1, studentName, score, totalQuestions, answers, timestamp };
+    if (!db.results) {
+      db.results = [];
+    }
+
+    // Calculate if quiz was completed based on settings
+    const settings = db.settings || { passingScore: 70 };
+    const percentage = (score / totalQuestions) * 100;
+    const completed = percentage >= settings.passingScore;
+
+    const newResult = {
+      id: Date.now().toString(),
+      studentName,
+      score,
+      totalQuestions,
+      answers,
+      timestamp,
+      timeRemaining,
+      completed,
+      percentage
+    };
+
     db.results.push(newResult);
+
+    // Update statistics
+    if (!db.stats) {
+      db.stats = {
+        totalAttempts: 0,
+        completedAttempts: 0,
+        totalScore: 0
+      };
+    }
+
+    db.stats.totalAttempts++;
+    if (completed) {
+      db.stats.completedAttempts++;
+    }
+    db.stats.totalScore += percentage;
+    
     writeDatabase(db);
+
+    // Log activity for analytics
+    logAdminActivity('system', 'QUIZ_SUBMISSION', {
+      studentId: studentName,
+      quizId: answers[0]?.quizId,
+      score: `${score}/${totalQuestions}`,
+      percentage: percentage.toFixed(1) + '%',
+      completed,
+      timeRemaining
+    });
 
     res.status(201).json(newResult);
   } catch (error) {
@@ -194,7 +240,7 @@ app.get('/api/admin/stats', (req, res, next) => {
       averageScore: calculateAverageScore(validResults),
       completionRate: calculateCompletionRate(validResults),
       recentActivity: generateRecentActivity(validResults),
-      performanceTrend: generatePerformanceTrend(validResults)
+      performanceTrend: calculatePerformanceTrend(validResults)
     };
     
     res.json(stats);
@@ -206,11 +252,6 @@ app.get('/api/admin/stats', (req, res, next) => {
     });
   }
 });
-
-function calculateAverageScore(results) {
-  if (!results.length) return 0;
-  return results.reduce((sum, r) => sum + r.score, 0) / results.length;
-}
 
 function generateRecentActivity(results) {
   return results
@@ -247,40 +288,109 @@ function generatePerformanceTrend(results) {
 app.get('/api/results/stats', (req, res, next) => {
   try {
     const db = readDatabase();
+    const results = db.results || [];
+
+    // Calculate score distribution
+    const scoreDistribution = Array.from({ length: 11 }, (_, i) => i * 10)
+      .map(score => {
+        const count = results.filter(r => {
+          if (!r || typeof r.score !== 'number' || !r.totalQuestions) return false;
+          const percentage = (r.score / r.totalQuestions) * 100;
+          return percentage >= score && percentage < score + 10;
+        }).length;
+        return { score, count };
+      });
+
+    // Calculate performance trend
+    const performanceTrend = calculatePerformanceTrend(results);
+
+    // Calculate stats using helper functions
     const stats = {
-      totalAttempts: db.results.length,
-      averageScore: db.results.reduce((sum, result) => sum + result.score, 0) / (db.results.length || 1),
-      highestScore: Math.max(...db.results.map(r => r.score), 0),
-      lowestScore: Math.min(...db.results.map(r => r.score), 0),
-      recentAttempts: db.results.slice(-5),
-      completionRate: (db.results.filter(r => r.completed).length / db.results.length) * 100 || 0
+      totalAttempts: results.length,
+      averageScore: calculateAverageScore(results),
+      completionRate: calculateCompletionRate(results),
+      scoreDistribution,
+      performanceTrend
     };
+
     res.json(stats);
   } catch (error) {
     next(error);
   }
 });
 
-// Keep only one questions stats endpoint with the most complete implementation
+// Calculate performance trend by aggregating scores per day
+const calculatePerformanceTrend = (results) => {
+  if (!results || !Array.isArray(results)) return [];
+
+  // Get last 7 days
+  const now = new Date();
+  const last7Days = Array.from({ length: 7 }, (_, i) => {
+    const date = new Date(now);
+    date.setDate(date.getDate() - (6 - i)); // Count from 6 days ago to today
+    return date.toISOString().split('T')[0];
+  });
+
+  // Create a map for quick lookup of scores by date
+  const scoresByDate = last7Days.reduce((acc, date) => {
+    acc[date] = {
+      totalScore: 0,
+      attempts: 0
+    };
+    return acc;
+  }, {});
+
+  // Aggregate scores for each date
+  results.forEach(result => {
+    if (!result || !result.timestamp || typeof result.score !== 'number' || !result.totalQuestions) return;
+    
+    const date = new Date(result.timestamp).toISOString().split('T')[0];
+    if (scoresByDate[date]) {
+      scoresByDate[date].totalScore += (result.score / result.totalQuestions) * 100;
+      scoresByDate[date].attempts++;
+    }
+  });
+
+  // Convert to trend data format with averages
+  return last7Days.map(date => ({
+    date,
+    averageScore: scoresByDate[date].attempts > 0 
+      ? Math.round((scoresByDate[date].totalScore / scoresByDate[date].attempts) * 10) / 10 
+      : 0,
+    attempts: scoresByDate[date].attempts
+  }));
+};
+
+// Get questions statistics
 app.get('/api/questions/stats', (req, res, next) => {
   try {
     const db = readDatabase();
-    const questionStats = db.questions.map(question => {
-      const attempts = db.results.filter(r => 
-        r.answers.some(a => a.questionId === question.id)
+    const questions = db.questions || [];
+    const results = db.results || [];
+
+    const questionStats = questions.map(question => {
+      // Only count attempts where the question exists and was actually answered
+      const attempts = results.filter(r => 
+        r && r.answers && Array.isArray(r.answers) &&
+        r.answers.some(a => a && a.questionId === question.id)
       );
       
+      // Only count correct answers for valid attempts
       const correctAnswers = attempts.filter(r =>
-        r.answers.find(a => a.questionId === question.id)?.correct
+        r.answers.some(a => 
+          a && a.questionId === question.id && a.correct
+        )
       );
 
       return {
         id: question.id,
-        text: question.text.substring(0, 50) + '...',
+        text: question.text || question.question || '',
         totalAttempts: attempts.length,
         correctAnswers: correctAnswers.length,
-        accuracy: attempts.length ? (correctAnswers.length / attempts.length) * 100 : 0,
-        averageResponseTime: calculateAverageTime(attempts, question.id)
+        accuracy: attempts.length 
+          ? (correctAnswers.length / attempts.length) * 100 
+          : 0,
+        averageTime: calculateAverageTime(attempts, question.id)
       };
     });
 
@@ -291,20 +401,26 @@ app.get('/api/questions/stats', (req, res, next) => {
 });
 
 // Keep only one instance of calculateAverageTime function
-function calculateAverageTime(attempts, questionId) {
-  const times = attempts
-    .map(r => r.answers.find(a => a.questionId === questionId)?.timeSpent || 0)
-    .filter(time => time > 0);
+const calculateAverageTime = (attempts, questionId) => {
+  if (!attempts || !Array.isArray(attempts)) return 0;
   
-  return times.length ? Math.round(times.reduce((sum, time) => sum + time, 0) / times.length) : 0;
-}
-
-// Helper function to calculate completion rate
-function calculateCompletionRate(results) {
-  const total = results.length;
-  const completed = results.filter(r => r.completed).length;
-  return total ? (completed / total) * 100 : 0;
-}
+  const times = attempts
+    .filter(r => r && r.answers && Array.isArray(r.answers))
+    .map(r => {
+      const answer = r.answers.find(a => a && a.questionId === questionId);
+      return answer?.timeSpent || 0;
+    })
+    .filter(time => typeof time === 'number' && time > 0);
+  
+  if (!times.length) return 0;
+  
+  // Remove outliers (times that are more than 2 standard deviations from mean)
+  const mean = times.reduce((sum, time) => sum + time, 0) / times.length;
+  const stdDev = Math.sqrt(times.reduce((sum, time) => sum + Math.pow(time - mean, 2), 0) / times.length);
+  const validTimes = times.filter(time => Math.abs(time - mean) <= 2 * stdDev);
+  
+  return validTimes.length ? Math.round(validTimes.reduce((sum, time) => sum + time, 0) / validTimes.length) : 0;
+};
 
 // Email endpoints
 app.post('/api/email/quiz-results', async (req, res, next) => {
@@ -400,24 +516,17 @@ app.get('/api/admin/settings', (req, res, next) => {
   try {
     const db = readDatabase();
     if (!db.settings) {
-      // Initialize default settings with expanded options
+      // Initialize default settings with all required fields
       db.settings = {
         quizTimeLimit: 30,
         passingScore: 70,
+        maxQuestions: 10,
+        requireEmailVerification: false,
         allowRetakes: true,
         showResults: true,
         maxAttempts: 3,
         feedbackMode: 'afterSubmission',
-        gradingScheme: 'percentage',
-        analytics: {
-          trackAnswerTime: true,
-          collectFeedback: true
-        },
-        accessibility: {
-          highContrast: false,
-          fontSize: 'medium',
-          extendedTimeLimit: false
-        }
+        gradingScheme: 'percentage'
       };
       writeDatabase(db);
     }
@@ -428,18 +537,32 @@ app.get('/api/admin/settings', (req, res, next) => {
 });
 
 // Update admin settings
-app.put('/api/admin/settings', (req, res, next) => {
+app.put('/api/admin/settings', (req, res) => {
   try {
-    const { settings } = req.body;
+    const updatedSettings = req.body;
     
-    if (!settings || typeof settings !== 'object') {
+    if (!updatedSettings || typeof updatedSettings !== 'object') {
       return res.status(400).json({ 
         error: 'Invalid settings data',
         details: ['Settings object is required'] 
       });
     }
 
-    const validationErrors = validateSettings(settings);
+    const db = readDatabase();
+    const currentSettings = db.settings || {
+      quizTimeLimit: 30,
+      passingScore: 70,
+      maxQuestions: 10,
+      requireEmailVerification: false,
+      allowRetakes: true,
+      showResults: true,
+      maxAttempts: 3,
+      feedbackMode: 'afterSubmission',
+      gradingScheme: 'percentage'
+    };
+
+    // Validate only the fields being updated
+    const validationErrors = validatePartialSettings(updatedSettings);
     if (validationErrors.length > 0) {
       return res.status(400).json({ 
         error: 'Validation failed',
@@ -447,21 +570,82 @@ app.put('/api/admin/settings', (req, res, next) => {
       });
     }
 
-    const db = readDatabase();
-    db.settings = {
-      ...settings,
+    // Merge current settings with updates
+    const newSettings = {
+      ...currentSettings,
+      ...updatedSettings,
       lastUpdated: new Date().toISOString()
     };
+
+    db.settings = newSettings;
     writeDatabase(db);
+
+    // Log settings changes
+    logAdminActivity('admin', 'UPDATE_SETTINGS', {
+      changes: Object.keys(updatedSettings).join(', ')
+    });
 
     res.json({ 
       message: 'Settings updated successfully',
-      settings: db.settings
+      settings: newSettings
     });
   } catch (error) {
-    next(error);
+    console.error('Error updating settings:', error);
+    res.status(500).json({ 
+      error: 'Failed to update settings',
+      details: [error.message]
+    });
   }
 });
+
+const validatePartialSettings = (settings) => {
+  const validationRules = {
+    quizTimeLimit: { type: 'number', min: 1, max: 180 },
+    passingScore: { type: 'number', min: 0, max: 100 },
+    maxQuestions: { type: 'number', min: 1, max: 100 },
+    requireEmailVerification: { type: 'boolean' },
+    allowRetakes: { type: 'boolean' },
+    showResults: { type: 'boolean' },
+    maxAttempts: { type: 'number', min: 1, max: 10 },
+    feedbackMode: { type: 'string', values: ['immediate', 'afterSubmission', 'never'] },
+    gradingScheme: { type: 'string', values: ['percentage', 'points', 'custom'] }
+  };
+
+  const errors = [];
+  
+  Object.entries(settings).forEach(([field, value]) => {
+    const rules = validationRules[field];
+    if (!rules) {
+      errors.push(`Unknown field: ${field}`);
+      return;
+    }
+
+    if (value === undefined || value === null) {
+      errors.push(`Invalid value for ${field}: cannot be null or undefined`);
+      return;
+    }
+
+    if (rules.type === 'number') {
+      if (typeof value !== 'number' || isNaN(value)) {
+        errors.push(`${field} must be a valid number`);
+      } else if (value < rules.min || value > rules.max) {
+        errors.push(`${field} must be between ${rules.min} and ${rules.max}`);
+      }
+    } else if (rules.type === 'boolean') {
+      if (typeof value !== 'boolean') {
+        errors.push(`${field} must be a boolean`);
+      }
+    } else if (rules.type === 'string') {
+      if (typeof value !== 'string') {
+        errors.push(`${field} must be a string`);
+      } else if (rules.values && !rules.values.includes(value)) {
+        errors.push(`${field} must be one of: ${rules.values.join(', ')}`);
+      }
+    }
+  });
+
+  return errors;
+};
 
 // Add new endpoint to reset settings to defaults
 app.post('/api/admin/settings/reset', (req, res, next) => {
@@ -469,20 +653,13 @@ app.post('/api/admin/settings/reset', (req, res, next) => {
     const defaultSettings = {
       quizTimeLimit: 30,
       passingScore: 70,
+      maxQuestions: 10,
+      requireEmailVerification: false,
       allowRetakes: true,
       showResults: true,
       maxAttempts: 3,
       feedbackMode: 'afterSubmission',
-      gradingScheme: 'percentage',
-      analytics: {
-        trackAnswerTime: true,
-        collectFeedback: true
-      },
-      accessibility: {
-        highContrast: false,
-        fontSize: 'medium',
-        extendedTimeLimit: false
-      }
+      gradingScheme: 'percentage'
     };
 
     const db = readDatabase();
@@ -494,7 +671,11 @@ app.post('/api/admin/settings/reset', (req, res, next) => {
       settings: defaultSettings 
     });
   } catch (error) {
-    next(error);
+    console.error('Error resetting settings:', error);
+    res.status(500).json({ 
+      error: 'Failed to reset settings',
+      details: [error.message]
+    });
   }
 });
 
@@ -502,35 +683,96 @@ app.post('/api/admin/settings/reset', (req, res, next) => {
 app.get('/api/users', (req, res) => {
   try {
     const db = readDatabase();
-    res.json(db.users || []);
+    const users = db.users || [];
+    // Remove sensitive data
+    const sanitizedUsers = users.map(({ password, ...user }) => user);
+    res.json(sanitizedUsers);
   } catch (error) {
+    console.error('Error fetching users:', error);
     res.status(500).json({ error: 'Failed to fetch users' });
   }
 });
 
 app.post('/api/users', (req, res) => {
   try {
-    const { name, email, role = 'student' } = req.body;
+    const { username, email, role } = req.body;
     const db = readDatabase();
     
+    if (!db.users) {
+      db.users = [];
+    }
+
+    // Check for existing user
+    if (db.users.some(u => u.email === email || u.username === username)) {
+      return res.status(400).json({ error: 'User already exists' });
+    }
+
     const newUser = {
       id: Date.now().toString(),
-      name,
+      username,
       email,
       role,
-      status: 'active',
-      quizzesCompleted: 0,
-      averageScore: 0,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     };
 
-    if (!db.users) db.users = [];
     db.users.push(newUser);
     writeDatabase(db);
-    
-    res.status(201).json(newUser);
+
+    // Log the activity
+    logAdminActivity('admin', 'CREATE_USER', {
+      userId: newUser.id,
+      username: newUser.username,
+      role: newUser.role
+    });
+
+    const { password, ...userWithoutPassword } = newUser;
+    res.status(201).json(userWithoutPassword);
   } catch (error) {
+    console.error('Error creating user:', error);
     res.status(500).json({ error: 'Failed to create user' });
+  }
+});
+
+app.put('/api/users/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+    const db = readDatabase();
+    
+    if (!db.users) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const userIndex = db.users.findIndex(u => u.id === id);
+    if (userIndex === -1) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Don't allow updating sensitive fields directly
+    const { password, ...safeUpdates } = updates;
+    
+    const updatedUser = {
+      ...db.users[userIndex],
+      ...safeUpdates,
+      updatedAt: new Date().toISOString()
+    };
+
+    db.users[userIndex] = updatedUser;
+    writeDatabase(db);
+
+    // Log the activity
+    logAdminActivity('admin', 'UPDATE_USER', {
+      userId: id,
+      username: updatedUser.username,
+      changes: Object.keys(safeUpdates).join(', ')
+    });
+
+    const { password: _, ...userWithoutPassword } = updatedUser;
+    res.json(userWithoutPassword);
+  } catch (error) {
+    console.error('Error updating user:', error);
+    res.status(500).json({ error: 'Failed to update user' });
   }
 });
 
@@ -540,19 +782,27 @@ app.delete('/api/users/:id', (req, res) => {
     const db = readDatabase();
     
     if (!db.users) {
-      return res.status(404).json({ error: 'Users collection not found' });
-    }
-
-    const userIndex = db.users.findIndex(user => user.id === id);
-    if (userIndex === -1) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    db.users.splice(userIndex, 1);
+    const user = db.users.find(u => u.id === id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Log the activity before deletion
+    logAdminActivity('admin', 'DELETE_USER', {
+      userId: id,
+      username: user.username,
+      role: user.role
+    });
+
+    db.users = db.users.filter(u => u.id !== id);
     writeDatabase(db);
-    
+
     res.json({ message: 'User deleted successfully' });
   } catch (error) {
+    console.error('Error deleting user:', error);
     res.status(500).json({ error: 'Failed to delete user' });
   }
 });
@@ -570,30 +820,6 @@ app.get('/api/users/:id', (req, res) => {
     res.json(user);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch user' });
-  }
-});
-
-app.put('/api/users/:id', (req, res) => {
-  try {
-    const { id } = req.params;
-    const updates = req.body;
-    const db = readDatabase();
-    const userIndex = db.users.findIndex(u => u.id === id);
-    
-    if (userIndex === -1) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    
-    db.users[userIndex] = {
-      ...db.users[userIndex],
-      ...updates,
-      updatedAt: new Date().toISOString()
-    };
-    
-    writeDatabase(db);
-    res.json(db.users[userIndex]);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to update user' });
   }
 });
 
@@ -779,6 +1005,13 @@ app.post('/api/quizzes', (req, res) => {
 
     db.quizzes.push(newQuiz);
     writeDatabase(db);
+
+    // Log the activity
+    logAdminActivity('admin', 'CREATE_QUIZ', { 
+      quizId: newQuiz.id,
+      title: newQuiz.title 
+    });
+
     res.status(201).json(newQuiz);
   } catch (error) {
     console.error('Error creating quiz:', error);
@@ -822,14 +1055,23 @@ app.put('/api/quizzes/:id', (req, res) => {
       return res.status(404).json({ error: 'Quiz not found' });
     }
 
-    db.quizzes[quizIndex] = {
+    const updatedQuiz = {
       ...db.quizzes[quizIndex],
       ...updates,
       updatedAt: new Date().toISOString()
     };
+    db.quizzes[quizIndex] = updatedQuiz;
     
     writeDatabase(db);
-    res.json(db.quizzes[quizIndex]);
+
+    // Log the activity
+    logAdminActivity('admin', 'UPDATE_QUIZ', {
+      quizId: id,
+      title: updatedQuiz.title,
+      changes: Object.keys(updates).join(', ')
+    });
+
+    res.json(updatedQuiz);
   } catch (error) {
     console.error('Error updating quiz:', error);
     res.status(500).json({ error: 'Failed to update quiz' });
@@ -845,14 +1087,20 @@ app.delete('/api/quizzes/:id', (req, res) => {
       return res.status(404).json({ error: 'Quiz not found' });
     }
     
-    const initialLength = db.quizzes.length;
-    db.quizzes = db.quizzes.filter(q => q.id !== id);
-    
-    if (db.quizzes.length === initialLength) {
+    const quiz = db.quizzes.find(q => q.id === id);
+    if (!quiz) {
       return res.status(404).json({ error: 'Quiz not found' });
     }
+
+    // Log the activity before deletion
+    logAdminActivity('admin', 'DELETE_QUIZ', {
+      quizId: id,
+      title: quiz.title
+    });
     
+    db.quizzes = db.quizzes.filter(q => q.id !== id);
     writeDatabase(db);
+    
     res.json({ message: 'Quiz deleted successfully' });
   } catch (error) {
     console.error('Error deleting quiz:', error);
@@ -864,7 +1112,58 @@ app.delete('/api/quizzes/:id', (req, res) => {
 app.get('/api/achievements', (req, res) => {
   try {
     const db = readDatabase();
-    res.json(db.achievements || []);
+    if (!db.achievements) {
+      db.achievements = [
+        {
+          id: 1,
+          name: "First Steps",
+          description: "Complete your first quiz",
+          icon: "star",
+          conditions: {
+            quizzes_completed: 1
+          }
+        },
+        {
+          id: 2,
+          name: "Speed Demon",
+          description: "Complete a quiz in less than half the time limit",
+          icon: "zap",
+          conditions: {
+            time_remaining_percent: 50
+          }
+        },
+        {
+          id: 3,
+          name: "Perfect Score",
+          description: "Get 100% on any quiz",
+          icon: "award",
+          conditions: {
+            score_percent: 100
+          }
+        },
+        {
+          id: 4,
+          name: "Quick Learner",
+          description: "Complete 5 quizzes with passing scores",
+          icon: "brain",
+          conditions: {
+            passed_quizzes: 5
+          }
+        },
+        {
+          id: 5,
+          name: "Knowledge Master",
+          description: "Maintain a 90%+ average across 10 quizzes",
+          icon: "trophy",
+          conditions: {
+            min_average: 90,
+            min_quizzes: 10
+          }
+        }
+      ];
+      writeDatabase(db);
+    }
+    res.json(db.achievements);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch achievements' });
   }
@@ -876,9 +1175,11 @@ app.use((req, res) => {
 });
 
 const validateSettings = (settings) => {
-  const requiredFields = {
+  const validationRules = {
     quizTimeLimit: { type: 'number', min: 1, max: 180 },
     passingScore: { type: 'number', min: 0, max: 100 },
+    maxQuestions: { type: 'number', min: 1, max: 100 },
+    requireEmailVerification: { type: 'boolean' },
     allowRetakes: { type: 'boolean' },
     showResults: { type: 'boolean' },
     maxAttempts: { type: 'number', min: 1, max: 10 },
@@ -887,25 +1188,38 @@ const validateSettings = (settings) => {
   };
 
   const errors = [];
-  for (const [field, rules] of Object.entries(requiredFields)) {
-    if (settings[field] === undefined) {
-      errors.push(`Missing required field: ${field}`);
-      continue;
+  
+  // Only validate fields that are being updated
+  Object.entries(settings).forEach(([field, value]) => {
+    const rules = validationRules[field];
+    if (!rules) {
+      errors.push(`Unknown field: ${field}`);
+      return;
     }
 
-    if (typeof settings[field] !== rules.type) {
+    if (value === undefined || value === null) {
+      errors.push(`Invalid value for ${field}: cannot be null or undefined`);
+      return;
+    }
+
+    if (typeof value !== rules.type) {
       errors.push(`Invalid type for ${field}: expected ${rules.type}`);
-      continue;
+      return;
     }
 
-    if (rules.type === 'number' && (settings[field] < rules.min || settings[field] > rules.max)) {
-      errors.push(`${field} must be between ${rules.min} and ${rules.max}`);
+    if (rules.type === 'number') {
+      const numValue = Number(value);
+      if (isNaN(numValue)) {
+        errors.push(`${field} must be a valid number`);
+      } else if (numValue < rules.min || numValue > rules.max) {
+        errors.push(`${field} must be between ${rules.min} and ${rules.max}`);
+      }
     }
 
-    if (rules.values && !rules.values.includes(settings[field])) {
+    if (rules.values && !rules.values.includes(value)) {
       errors.push(`${field} must be one of: ${rules.values.join(', ')}`);
     }
-  }
+  });
 
   return errors;
 };
@@ -941,6 +1255,210 @@ const ensureDatabase = () => {
   return db;
 };
 
+// Initialize audit logs if not exists
+const logAdminActivity = (userId, action, details = {}) => {
+  try {
+    const db = readDatabase();
+    if (!db.auditLogs) {
+      db.auditLogs = [];
+    }
+    
+    const log = {
+      id: Date.now().toString(),
+      userId,
+      action,
+      details,
+      timestamp: new Date().toISOString(),
+      ipAddress: '', // In production, get from request
+      userAgent: ''  // In production, get from request
+    };
+    
+    db.auditLogs.push(log);
+    writeDatabase(db);
+    return log;
+  } catch (error) {
+    console.error('Error logging admin activity:', error);
+  }
+};
+
+// Get audit logs
+app.get('/api/admin/audit-logs', (req, res) => {
+  try {
+    const db = readDatabase();
+    if (!db.auditLogs) {
+      db.auditLogs = [];
+      writeDatabase(db);
+    }
+    
+    // Sort logs by timestamp in descending order
+    const sortedLogs = db.auditLogs.sort((a, b) => 
+      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+    
+    res.json(sortedLogs);
+  } catch (error) {
+    console.error('Error fetching audit logs:', error);
+    res.status(500).json({ error: 'Failed to fetch audit logs' });
+  }
+});
+
+// Modify existing endpoints to log admin activities
+app.post('/api/quizzes', (req, res) => {
+  try {
+    const { title, description, questions, timeLimit, passingScore } = req.body;
+    
+    if (!title || !Array.isArray(questions)) {
+      return res.status(400).json({ error: 'Title and questions array are required' });
+    }
+
+    const db = readDatabase();
+    
+    if (!db.quizzes) {
+      db.quizzes = [];
+    }
+
+    const newQuiz = {
+      id: Date.now().toString(),
+      title,
+      description,
+      questions,
+      timeLimit: timeLimit || 30,
+      passingScore: passingScore || 70,
+      isPublished: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    db.quizzes.push(newQuiz);
+    writeDatabase(db);
+
+    // Log the activity
+    logAdminActivity('admin', 'CREATE_QUIZ', { 
+      quizId: newQuiz.id,
+      title: newQuiz.title 
+    });
+
+    res.status(201).json(newQuiz);
+  } catch (error) {
+    console.error('Error creating quiz:', error);
+    res.status(500).json({ error: 'Failed to create quiz' });
+  }
+});
+
+app.put('/api/quizzes/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+    const db = readDatabase();
+    
+    if (!db.quizzes) {
+      return res.status(404).json({ error: 'Quiz not found' });
+    }
+    
+    const quizIndex = db.quizzes.findIndex(q => q.id === id);
+    if (quizIndex === -1) {
+      return res.status(404).json({ error: 'Quiz not found' });
+    }
+
+    const updatedQuiz = {
+      ...db.quizzes[quizIndex],
+      ...updates,
+      updatedAt: new Date().toISOString()
+    };
+    db.quizzes[quizIndex] = updatedQuiz;
+    
+    writeDatabase(db);
+
+    // Log the activity
+    logAdminActivity('admin', 'UPDATE_QUIZ', {
+      quizId: id,
+      title: updatedQuiz.title,
+      changes: Object.keys(updates).join(', ')
+    });
+
+    res.json(updatedQuiz);
+  } catch (error) {
+    console.error('Error updating quiz:', error);
+    res.status(500).json({ error: 'Failed to update quiz' });
+  }
+});
+
+app.delete('/api/quizzes/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    const db = readDatabase();
+    
+    if (!db.quizzes) {
+      return res.status(404).json({ error: 'Quiz not found' });
+    }
+    
+    const quiz = db.quizzes.find(q => q.id === id);
+    if (!quiz) {
+      return res.status(404).json({ error: 'Quiz not found' });
+    }
+
+    // Log the activity before deletion
+    logAdminActivity('admin', 'DELETE_QUIZ', {
+      quizId: id,
+      title: quiz.title
+    });
+    
+    db.quizzes = db.quizzes.filter(q => q.id !== id);
+    writeDatabase(db);
+    
+    res.json({ message: 'Quiz deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting quiz:', error);
+    res.status(500).json({ error: 'Failed to delete quiz' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
+
+// Helper functions for statistics
+function calculateAverageScore(results) {
+  if (!results || !results.length) return 0;
+  
+  // Filter out invalid results
+  const validResults = results.filter(r => 
+    r && typeof r.score === 'number' && 
+    typeof r.totalQuestions === 'number' && 
+    r.totalQuestions > 0
+  );
+
+  if (!validResults.length) return 0;
+
+  // Calculate percentage for each result then average
+  const sum = validResults.reduce((acc, r) => {
+    const percentage = (r.score / r.totalQuestions) * 100;
+    return acc + percentage;
+  }, 0);
+
+  return Math.round((sum / validResults.length) * 10) / 10; // Round to 1 decimal
+}
+
+function calculateCompletionRate(results) {
+  if (!results || !results.length) {
+    return 0;
+  }
+  
+  // Filter out invalid results
+  const validResults = results.filter(r => 
+    r && typeof r.score === 'number' && 
+    typeof r.totalQuestions === 'number' && 
+    r.totalQuestions > 0
+  );
+
+  if (!validResults.length) {
+    return 0;
+  }
+
+  // A quiz is considered complete if score matches total questions or has completed flag
+  const completed = validResults.filter(r => 
+    r.completed || r.score === r.totalQuestions
+  ).length;
+
+  return Math.round((completed / validResults.length) * 100);
+}

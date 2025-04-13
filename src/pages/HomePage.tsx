@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { fetchQuestions } from '../api/quiz';
 import { Brain, Star, Award, Rocket, Shield } from 'lucide-react';
 import { useSoundEffects, preloadSounds } from '../utils/sounds';
 
@@ -22,15 +21,8 @@ const HomePage: React.FC = () => {
       return;
     }
     setError('');
-
-    try {
-      playSuccess();
-      const questions = await fetchQuestions();
-      navigate('/quiz', { state: { studentName, questions } });
-    } catch (error) {
-      console.error('Failed to fetch questions:', error);
-      navigate('/quiz', { state: { studentName, questions: [] } });
-    }
+    playSuccess();
+    navigate('/quiz-selection', { state: { studentName } });
   };
 
   return (
@@ -60,11 +52,11 @@ const HomePage: React.FC = () => {
         <div className="bg-white rounded-2xl shadow-xl p-8 mb-8 animate-pop">
           <div className="max-w-md mx-auto">
             <label className="block text-lg font-medium text-gray-700 mb-2">
-              What's your name, future genius? 🤔
+              Ready to begin your adventure? Enter your name! 🚀
             </label>
             <input
               type="text"
-              placeholder="Enter your name here!"
+              placeholder="Enter your name to start!"
               value={studentName}
               onChange={(e) => setStudentName(e.target.value)}
               className="w-full px-4 py-3 text-lg border-2 border-primary rounded-xl 

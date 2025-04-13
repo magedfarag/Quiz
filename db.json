@@ -2,332 +2,363 @@
   "users": [
     {
       "id": "1",
-      "name": "Admin User",
+      "username": "admin",
       "email": "admin@test.com",
       "password": "admin123",
       "role": "admin",
       "status": "active",
-      "quizzesCompleted": 0,
-      "averageScore": 0,
-      "createdAt": "2024-01-01T00:00:00.000Z",
-      "updatedAt": "2025-04-13T04:49:28.447Z"
+      "quizzesCompleted": 25,
+      "averageScore": 92.5,
+      "createdAt": "2024-01-01T00:00:00.000Z"
     },
     {
       "id": "2",
-      "name": "John Doe",
-      "email": "john@test.com",
-      "role": "Student",
+      "username": "sarah.smith",
+      "email": "sarah.smith@example.com",
+      "role": "student",
       "status": "active",
-      "quizzesCompleted": 5,
-      "averageScore": 80,
-      "createdAt": "2024-01-01T00:00:00.000Z"
+      "quizzesCompleted": 42,
+      "averageScore": 88.3,
+      "createdAt": "2024-02-15T14:23:11.123Z"
     },
     {
       "id": "3",
-      "name": "Jane Smith",
-      "email": "jane@test.com",
-      "role": "Student",
+      "username": "john.doe",
+      "email": "john.doe@example.com",
+      "role": "student",
       "status": "active",
-      "quizzesCompleted": 3,
-      "averageScore": 90,
-      "createdAt": "2024-01-01T00:00:00.000Z"
+      "quizzesCompleted": 35,
+      "averageScore": 91.7,
+      "createdAt": "2024-02-01T09:45:30.421Z"
     }
   ],
   "questions": [
     {
-      "id": "q1",
-      "type": "multiple_choice",
-      "question": "What is 2 + 2?",
-      "options": [
-        "3",
-        "4",
-        "5",
-        "6"
-      ],
-      "correctAnswer": "4",
+      "id": "m1",
+      "text": "What is 8 + 7?",
+      "options": ["15", "14", "16", "13"],
+      "correctAnswer": "15",
+      "difficulty": "beginner",
       "category": "Math",
-      "difficulty": "easy",
-      "createdAt": "2023-01-01T00:00:00Z"
+      "timeLimit": 30
     },
     {
-      "id": "q2",
-      "type": "multiple_choice",
-      "question": "What is the capital of France?",
-      "options": [
-        "Berlin",
-        "Madrid",
-        "Paris",
-        "Rome"
-      ],
-      "correctAnswer": "Paris",
-      "category": "Geography",
-      "difficulty": "medium",
-      "createdAt": "2023-01-01T00:00:00Z"
+      "id": "m2",
+      "text": "What is 12 × 3?",
+      "options": ["35", "36", "34", "33"],
+      "correctAnswer": "36",
+      "difficulty": "beginner",
+      "category": "Math",
+      "timeLimit": 30
     },
     {
-      "id": "q3",
-      "type": "multiple_choice",
-      "question": "Which planet is known as the Red Planet?",
-      "options": [
-        "Venus",
-        "Mars",
-        "Jupiter",
-        "Saturn"
-      ],
-      "correctAnswer": "Mars",
-      "category": "Science",
-      "difficulty": "medium",
-      "createdAt": "2023-01-01T00:00:00Z"
+      "id": "m3",
+      "text": "What is half of 42?",
+      "options": ["21", "20", "22", "23"],
+      "correctAnswer": "21",
+      "difficulty": "intermediate",
+      "category": "Math",
+      "timeLimit": 45
     },
     {
-      "id": "q4",
-      "type": "multiple_choice",
-      "question": "What is the largest mammal in the world?",
-      "options": [
-        "African Elephant",
-        "Blue Whale",
-        "Giraffe",
-        "Hippopotamus"
-      ],
-      "correctAnswer": "Blue Whale",
-      "category": "Science",
-      "difficulty": "easy",
-      "createdAt": "2023-01-01T00:00:00Z"
+      "id": "m4",
+      "text": "What is 64 ÷ 8?",
+      "options": ["8", "7", "9", "6"],
+      "correctAnswer": "8",
+      "difficulty": "intermediate",
+      "category": "Math",
+      "timeLimit": 45
+    },
+    {
+      "id": "m5",
+      "text": "Round 3.7 to the nearest whole number",
+      "options": ["4", "3", "3.5", "3.8"],
+      "correctAnswer": "4",
+      "difficulty": "beginner",
+      "category": "Math",
+      "timeLimit": 30
+    },
+    {
+      "id": "m6",
+      "text": "What is the next number in the sequence: 2, 4, 6, 8, ?",
+      "options": ["10", "12", "9", "11"],
+      "correctAnswer": "10",
+      "difficulty": "beginner",
+      "category": "Math",
+      "timeLimit": 30
+    },
+    {
+      "id": "m7",
+      "text": "What is the perimeter of a square with sides of 5cm?",
+      "options": ["20cm", "25cm", "15cm", "10cm"],
+      "correctAnswer": "20cm",
+      "difficulty": "advanced",
+      "category": "Math",
+      "timeLimit": 60
+    },
+    {
+      "id": "m8",
+      "text": "What is 1/4 of 100?",
+      "options": ["25", "20", "30", "40"],
+      "correctAnswer": "25",
+      "difficulty": "intermediate",
+      "category": "Math",
+      "timeLimit": 45
+    },
+    {
+      "id": "m9",
+      "text": "How many minutes are in 2 hours?",
+      "options": ["120", "90", "100", "140"],
+      "correctAnswer": "120",
+      "difficulty": "beginner",
+      "category": "Math",
+      "timeLimit": 30
+    },
+    {
+      "id": "m10",
+      "text": "What is the area of a rectangle with length 6cm and width 4cm?",
+      "options": ["24cm²", "20cm²", "22cm²", "26cm²"],
+      "correctAnswer": "24cm²",
+      "difficulty": "advanced",
+      "category": "Math",
+      "timeLimit": 60
+    }
+  ],
+  "quizzes": [
+    {
+      "id": "1",
+      "title": "Basic Addition and Multiplication",
+      "description": "Practice your basic math skills with simple operations",
+      "questions": ["m1", "m2", "m5", "m6", "m9"],
+      "timeLimit": 20,
+      "passingScore": 60,
+      "isPublished": true,
+      "category": "Math",
+      "difficulty": "beginner",
+      "attempts": 0,
+      "averageScore": 0,
+      "createdAt": "2024-04-15T10:00:00.000Z",
+      "updatedAt": "2024-04-15T10:00:00.000Z"
+    },
+    {
+      "id": "2",
+      "title": "Division and Fractions",
+      "description": "Test your knowledge of division and fractions",
+      "questions": ["m3", "m4", "m8", "m1", "m2"],
+      "timeLimit": 25,
+      "passingScore": 70,
+      "isPublished": true,
+      "category": "Math",
+      "difficulty": "intermediate",
+      "attempts": 0,
+      "averageScore": 0,
+      "createdAt": "2024-04-15T10:05:00.000Z",
+      "updatedAt": "2024-04-15T10:05:00.000Z"
+    },
+    {
+      "id": "3",
+      "title": "Geometry Basics",
+      "description": "Learn about shapes, perimeter, and area",
+      "questions": ["m7", "m10", "m5", "m8", "m4"],
+      "timeLimit": 30,
+      "passingScore": 75,
+      "isPublished": true,
+      "category": "Math",
+      "difficulty": "advanced",
+      "attempts": 0,
+      "averageScore": 0,
+      "createdAt": "2024-04-15T10:10:00.000Z",
+      "updatedAt": "2024-04-15T10:10:00.000Z"
+    },
+    {
+      "id": "4",
+      "title": "Mixed Math Practice",
+      "description": "Challenge yourself with various math problems",
+      "questions": ["m2", "m4", "m6", "m8", "m10"],
+      "timeLimit": 35,
+      "passingScore": 80,
+      "isPublished": true,
+      "category": "Math",
+      "difficulty": "intermediate",
+      "attempts": 0,
+      "averageScore": 0,
+      "createdAt": "2024-04-15T10:15:00.000Z",
+      "updatedAt": "2024-04-15T10:15:00.000Z"
+    },
+    {
+      "id": "5",
+      "title": "Math Master Challenge",
+      "description": "Test all your math skills in one quiz",
+      "questions": ["m1", "m3", "m5", "m7", "m9"],
+      "timeLimit": 40,
+      "passingScore": 85,
+      "isPublished": false,
+      "category": "Math",
+      "difficulty": "advanced",
+      "attempts": 0,
+      "averageScore": 0,
+      "createdAt": "2024-04-15T10:20:00.000Z",
+      "updatedAt": "2024-04-15T10:20:00.000Z"
     }
   ],
   "results": [
     {
-      "id": 1,
-      "studentName": "ali",
-      "score": 0,
-      "totalQuestions": 1,
-      "answers": [],
-      "timestamp": 1744405383980
+      "id": "r1",
+      "studentName": "Sarah Smith",
+      "quizId": "1",
+      "score": 90,
+      "totalQuestions": 100,
+      "timeRemaining": 720,
+      "completed": true,
+      "percentage": 90,
+      "timestamp": "2024-04-12T14:30:00.000Z",
+      "achievements": ["speed_demon", "perfect_score"]
     },
     {
-      "id": 2,
-      "studentName": "ali",
-      "score": 0,
-      "totalQuestions": 1,
-      "answers": [],
-      "timestamp": 1744405930165
-    },
-    {
-      "id": 3,
-      "studentName": "ali",
-      "score": 0,
-      "totalQuestions": 1,
-      "answers": [],
-      "timestamp": 1744407256355
-    },
-    {
-      "id": 4,
-      "studentName": "ali",
-      "score": 0,
-      "totalQuestions": 1,
-      "answers": [
-        "4"
-      ],
-      "timestamp": 1744410484189
-    },
-    {
-      "id": 5,
-      "studentName": "ali",
-      "score": 0,
-      "totalQuestions": 1,
-      "answers": [
-        "4"
-      ],
-      "timestamp": 1744410537168
-    },
-    {
-      "id": 6,
-      "studentName": "ali",
-      "score": 1,
-      "totalQuestions": 4,
-      "answers": [
-        "4",
-        "Rome",
-        "Saturn",
-        "Hippopotamus"
-      ],
-      "timestamp": 1744410725915
-    },
-    {
-      "id": 7,
-      "studentName": "ali",
-      "score": 4,
-      "totalQuestions": 4,
-      "answers": [
-        "4",
-        "Paris",
-        "Mars",
-        "Blue Whale"
-      ],
-      "timestamp": 1744411758616
-    },
-    {
-      "id": 8,
-      "studentName": "ali",
-      "score": 1,
-      "totalQuestions": 4,
-      "answers": [
-        "4",
-        "Rome",
-        "Saturn",
-        "Hippopotamus"
-      ],
-      "timestamp": 1744465924331
-    },
-    {
-      "id": 9,
-      "studentName": "ahmed",
-      "score": 4,
-      "totalQuestions": 4,
-      "answers": [
-        "4",
-        "Paris",
-        "Mars",
-        "Blue Whale"
-      ],
-      "timestamp": 1744525028615
+      "id": "r2",
+      "studentName": "John Doe",
+      "quizId": "2",
+      "score": 85,
+      "totalQuestions": 100,
+      "timeRemaining": 540,
+      "completed": true,
+      "percentage": 85,
+      "timestamp": "2024-04-11T16:45:00.000Z",
+      "achievements": ["quick_learner"]
     }
   ],
   "settings": {
-    "quizTimer": 30,
-    "maxQuestions": 10,
+    "quizTimeLimit": 30,
     "passingScore": 70,
-    "requireEmailVerification": true
+    "maxQuestions": 10,
+    "requireEmailVerification": true,
+    "allowRetakes": true,
+    "showResults": true,
+    "maxAttempts": 3,
+    "feedbackMode": "afterSubmission",
+    "gradingScheme": "percentage",
+    "lastUpdated": "2024-04-01T12:00:00.000Z"
   },
-  "logs": [],
-  "quizzes": [
-    {
-      "id": "1",
-      "title": "General Knowledge Quiz",
-      "description": "Test your knowledge across various subjects",
-      "questions": [
-        "q1",
-        "q2",
-        "q3",
-        "q4"
-      ],
-      "isPublished": true,
-      "createdAt": "2024-01-01T00:00:00.000Z",
-      "updatedAt": "2024-01-01T00:00:00.000Z",
-      "category": "Mixed",
-      "difficulty": "medium",
-      "timeLimit": 300,
-      "passScore": 70,
-      "validationRules": {
-        "minQuestions": 4,
-        "requireExplanations": false,
-        "allowRetry": true
+  "stats": {
+    "totalAttempts": 425,
+    "completedAttempts": 398,
+    "totalScore": 34275,
+    "averageScore": 80.65,
+    "completionRate": 93.65,
+    "performanceTrend": [
+      {
+        "date": "2024-04-06",
+        "averageScore": 79.5,
+        "attempts": 45
+      },
+      {
+        "date": "2024-04-07",
+        "averageScore": 81.2,
+        "attempts": 52
+      },
+      {
+        "date": "2024-04-08",
+        "averageScore": 82.8,
+        "attempts": 48
+      },
+      {
+        "date": "2024-04-09",
+        "averageScore": 80.9,
+        "attempts": 56
+      },
+      {
+        "date": "2024-04-10",
+        "averageScore": 83.4,
+        "attempts": 51
+      },
+      {
+        "date": "2024-04-11",
+        "averageScore": 84.1,
+        "attempts": 49
+      },
+      {
+        "date": "2024-04-12",
+        "averageScore": 85.2,
+        "attempts": 54
       }
+    ]
+  },
+  "auditLogs": [
+    {
+      "id": "a1",
+      "userId": "1",
+      "action": "UPDATE_SETTINGS",
+      "details": {
+        "changes": "quizTimeLimit, passingScore"
+      },
+      "timestamp": "2024-04-12T10:15:00.000Z",
+      "ipAddress": "192.168.1.100",
+      "userAgent": "Mozilla/5.0"
     },
     {
-      "id": "1744519677243",
-      "title": "Advanced Quiz",
-      "description": "This is an advanced quiz for smart students",
-      "questions": [
-        {
-          "id": "1744519632091",
-          "text": "This is a test question 1",
-          "options": [
-            "1",
-            "2",
-            "3",
-            "4"
-          ],
-          "correctAnswer": "1",
-          "type": "multiple_choice",
-          "difficulty": "medium"
-        },
-        {
-          "id": "1744519645932",
-          "text": "This is a test question 2",
-          "options": [
-            "1",
-            "2",
-            "3",
-            "4"
-          ],
-          "correctAnswer": "2",
-          "type": "multiple_choice",
-          "difficulty": "medium"
-        },
-        {
-          "id": "1744519658331",
-          "text": "This is a test question 3",
-          "options": [
-            "1",
-            "2",
-            "3",
-            "4"
-          ],
-          "correctAnswer": "3",
-          "type": "multiple_choice",
-          "difficulty": "medium"
-        },
-        {
-          "id": "1744519671680",
-          "text": "This is a test question 4",
-          "options": [
-            "1",
-            "2",
-            "3",
-            "4"
-          ],
-          "correctAnswer": "4",
-          "type": "multiple_choice",
-          "difficulty": "medium"
-        }
-      ],
-      "isPublished": true,
-      "createdAt": "2025-04-13T04:47:57.243Z",
-      "updatedAt": "2025-04-13T04:48:20.397Z"
-    }
-  ],
-  "questionQuizRelations": [
-    {
-      "questionId": "q1",
-      "quizIds": [
-        "1"
-      ]
-    },
-    {
-      "questionId": "q2",
-      "quizIds": [
-        "1"
-      ]
-    },
-    {
-      "questionId": "q3",
-      "quizIds": [
-        "1"
-      ]
-    },
-    {
-      "questionId": "q4",
-      "quizIds": [
-        "1"
-      ]
+      "id": "a2",
+      "userId": "1",
+      "action": "CREATE_QUIZ",
+      "details": {
+        "quizId": "2",
+        "title": "TypeScript Advanced Concepts"
+      },
+      "timestamp": "2024-04-12T11:30:00.000Z",
+      "ipAddress": "192.168.1.100",
+      "userAgent": "Mozilla/5.0"
     }
   ],
   "achievements": [
     {
       "id": 1,
-      "name": "First Step",
-      "description": "Completed the first quiz."
+      "name": "First Steps",
+      "description": "Complete your first quiz",
+      "icon": "star",
+      "conditions": {
+        "quizzes_completed": 1
+      },
+      "earnedCount": 245
     },
     {
       "id": 2,
+      "name": "Speed Demon",
+      "description": "Complete a quiz in less than half the time limit",
+      "icon": "zap",
+      "conditions": {
+        "time_remaining_percent": 50
+      },
+      "earnedCount": 156
+    },
+    {
+      "id": 3,
       "name": "Perfect Score",
-      "description": "Achieved a perfect score in a quiz."
+      "description": "Get 100% on any quiz",
+      "icon": "award",
+      "conditions": {
+        "score_percent": 100
+      },
+      "earnedCount": 89
+    },
+    {
+      "id": 4,
+      "name": "Quick Learner",
+      "description": "Complete 5 quizzes with passing scores",
+      "icon": "brain",
+      "conditions": {
+        "passed_quizzes": 5
+      },
+      "earnedCount": 178
+    },
+    {
+      "id": 5,
+      "name": "Knowledge Master",
+      "description": "Maintain a 90%+ average across 10 quizzes",
+      "icon": "trophy",
+      "conditions": {
+        "min_average": 90,
+        "min_quizzes": 10
+      },
+      "earnedCount": 67
     }
-  ],
-  "adminStats": {
-    "totalQuizzes": 10,
-    "activeUsers": 25,
-    "averageScore": 85
-  }
+  ]
 }

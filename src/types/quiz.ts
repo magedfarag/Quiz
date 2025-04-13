@@ -3,18 +3,15 @@ import { QuestionType, DifficultyLevel } from '../types';
 export interface Quiz {
   id: string;
   title: string;
-  description?: string;
+  description: string;
+  questions: string[];
   timeLimit: number;
   passingScore: number;
-  questions: {
-    id: string;
-    text: string;
-    options: string[];
-    correctAnswer: string;
-    type?: QuestionType;
-    difficulty?: DifficultyLevel;
-  }[];
   isPublished: boolean;
+  category: string;
+  difficulty: string;
+  attempts: number;
+  averageScore: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -24,6 +21,7 @@ export interface Question {
   text: string;
   options: string[];
   correctAnswer: string;
-  type: QuestionType;
-  difficulty: DifficultyLevel;
+  difficulty: string;
+  category: string;
+  timeLimit: number;
 }

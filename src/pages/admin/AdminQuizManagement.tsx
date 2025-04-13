@@ -87,7 +87,8 @@ const AdminQuizManagement: React.FC = () => {
       state: { 
         quizId: quiz.id,
         studentName: 'Preview Mode',
-        isPreview: true
+        isPreview: true,
+        quiz: quiz  // Pass the entire quiz object for preview
       } 
     });
   };

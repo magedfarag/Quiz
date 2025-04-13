@@ -32,7 +32,7 @@ const transformQuizData = (quiz: Quiz): EditQuizForm => ({
   passingScore: quiz.passingScore,
   questions: quiz.questions.map(q => ({
     id: q.id,
-    question: q.text,
+    question: q.text || q.question || '', // Handle both text and question fields
     options: q.options || [],
     correctAnswer: q.correctAnswer || '',
     type: q.type || 'multiple_choice',

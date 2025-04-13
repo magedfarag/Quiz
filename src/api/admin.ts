@@ -2,6 +2,8 @@ export const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:30
 
 import type { User } from '../types/user';
 import type { Quiz } from '../types/quiz';
+import type { AuditLog } from '@/types/audit';
+import { mockAuditLogs } from '@/mocks/auditLogsMock';
 
 export const fetchQuizStats = async () => {
   const response = await fetch(`${API_URL}/results/stats`);
@@ -27,13 +29,32 @@ export const fetchSettings = async () => {
   return response.json();
 };
 
-export const updateSettings = async (settingsData: Record<string, any>) => {
+export const updateSettings = async (settingsData: AdminSettings) => {
   const response = await fetch(`${API_URL}/admin/settings`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(settingsData)
+    body: JSON.stringify({ settings: settingsData })
   });
-  if (!response.ok) throw new Error('Failed to update settings');
+  
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || 'Failed to update settings');
+  }
+  
+  return response.json();
+};
+
+export const resetSettings = async () => {
+  const response = await fetch(`${API_URL}/admin/settings/reset`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' }
+  });
+  
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || 'Failed to reset settings');
+  }
+  
   return response.json();
 };
 
@@ -152,7 +173,21 @@ export const adminApi = {
       throw new Error('Failed to fetch dashboard stats');
     }
     return response.json();
-  }
+  },
+
+  // Audit Logs
+  async getAuditLogs(): Promise<AuditLog[]> {
+    if (import.meta.env.DEV) {
+      // Use mock data in development
+      return Promise.resolve(mockAuditLogs);
+    }
+
+    const response = await fetch(`${API_URL}/admin/audit-logs`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch audit logs');
+    }
+    return response.json();
+  },
 };
 
 // Fix the named export by binding the method
