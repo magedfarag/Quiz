@@ -23,15 +23,18 @@ const QuizSelection: React.FC = () => {
 
     const loadQuizzes = async () => {
       try {
+        setLoading(true);
+        setError(null);
         const data = await adminApi.getQuizzes();
         setQuizzes(data.filter(quiz => quiz.isPublished));
-      } catch (error) {
+      } catch (err) {
         setError('Failed to load quizzes');
-        console.error('Error loading quizzes:', error);
+        console.error('Error loading quizzes:', err);
       } finally {
         setLoading(false);
       }
     };
+    console.log('QuizSelection: Component mounted, loading quizzes...'); // Add this line
     loadQuizzes();
   }, [studentName, navigate]);
 
@@ -138,7 +141,7 @@ const QuizSelection: React.FC = () => {
                 animate={{ scale: 1, opacity: 1 }}
                 whileHover={{ scale: 1.02 }}
                 className="bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer transition-all"
-                onClick={() => navigate('/quiz', { 
+                onClick={() => navigate('/quiz-overview', { 
                   state: { 
                     studentName, 
                     quizId: quiz.id,

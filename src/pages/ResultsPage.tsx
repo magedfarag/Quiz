@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Award, Download, Mail, Home, Star, Trophy, Target, ChevronDown, Check, X, Zap, Brain } from 'lucide-react';
@@ -60,7 +60,7 @@ const ResultsPage: React.FC = () => {
     passed = false,
     settings = null,
     remainingAttempts = null,
-    timeRemaining = null // Added timeRemaining with null default
+    timeRemaining = null // Added timeRemaining
   } = (location.state as LocationState) || {};
 
   // Calculate percentage early to avoid reference error
@@ -91,6 +91,13 @@ const ResultsPage: React.FC = () => {
     }
   }, [isPreview]);
 
+  const [showEmailDialog, setShowEmailDialog] = useState(false);
+  const [email, setEmail] = useState('');
+  const [showingAchievement, setShowingAchievement] = useState<number | null>(null);
+  const { playSuccess, playAchievement, playClick } = useSoundEffects();
+
+  const memoizedPlayAchievement = useCallback(playAchievement, [playAchievement]);
+
   useEffect(() => {
     if (!isPreview) {
       // Check which achievements were earned
@@ -120,7 +127,7 @@ const ResultsPage: React.FC = () => {
           
           setEarnedAchievements(earned);
           if (earned.length > 0) {
-            playAchievement();
+            memoizedPlayAchievement();
           }
         } catch (error) {
           console.error('Error fetching achievements:', error);
@@ -129,12 +136,7 @@ const ResultsPage: React.FC = () => {
       
       checkAchievements();
     }
-  }, [isPreview, percentage, timeRemaining, settings, playAchievement]);
-
-  const [showEmailDialog, setShowEmailDialog] = useState(false);
-  const [email, setEmail] = useState('');
-  const [showingAchievement, setShowingAchievement] = useState<number | null>(null);
-  const { playSuccess, playAchievement, playClick } = useSoundEffects();
+  }, [isPreview, percentage, timeRemaining, settings, memoizedPlayAchievement]);
 
   useEffect(() => {
     // Trigger celebration animation and sound on load
@@ -186,7 +188,7 @@ const ResultsPage: React.FC = () => {
   };
 
   const handleAchievementClick = (achievementId: number) => {
-    playAchievement();
+    memoizedPlayAchievement();
     setShowingAchievement(achievementId);
   };
 
@@ -415,8 +417,8 @@ const ResultsPage: React.FC = () => {
             {canRetake && !isPreview && (
               <button
                 onClick={() => navigate('/quiz', { state: { studentName } })}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-xl shadow-lg
-                  hover:bg-primary-700 transition transform hover:scale-105"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-white rounded-xl shadow-lg
+                  hover:bg-gray-50 transition transform hover:scale-105"
               >
                 Try Again
                 <Award className="w-5 h-5" />

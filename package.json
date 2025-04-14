@@ -5,11 +5,11 @@
   "type": "module",
   "main": "server.cjs",
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently \"npm run server\" \"npm run start\"",
     "build": "vite build",
     "preview": "vite preview",
     "server": "node server.js",
-    "start": "concurrently \"npm run server\" \"npm run dev\"",
+    "start": "vite",
     "test": "vitest",
     "coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",

@@ -36,7 +36,12 @@
     {
       "id": "m1",
       "text": "What is 8 + 7?",
-      "options": ["15", "14", "16", "13"],
+      "options": [
+        "15",
+        "14",
+        "16",
+        "13"
+      ],
       "correctAnswer": "15",
       "difficulty": "beginner",
       "category": "Math",
@@ -45,7 +50,12 @@
     {
       "id": "m2",
       "text": "What is 12 × 3?",
-      "options": ["35", "36", "34", "33"],
+      "options": [
+        "35",
+        "36",
+        "34",
+        "33"
+      ],
       "correctAnswer": "36",
       "difficulty": "beginner",
       "category": "Math",
@@ -54,7 +64,12 @@
     {
       "id": "m3",
       "text": "What is half of 42?",
-      "options": ["21", "20", "22", "23"],
+      "options": [
+        "21",
+        "20",
+        "22",
+        "23"
+      ],
       "correctAnswer": "21",
       "difficulty": "intermediate",
       "category": "Math",
@@ -63,7 +78,12 @@
     {
       "id": "m4",
       "text": "What is 64 ÷ 8?",
-      "options": ["8", "7", "9", "6"],
+      "options": [
+        "8",
+        "7",
+        "9",
+        "6"
+      ],
       "correctAnswer": "8",
       "difficulty": "intermediate",
       "category": "Math",
@@ -72,7 +92,12 @@
     {
       "id": "m5",
       "text": "Round 3.7 to the nearest whole number",
-      "options": ["4", "3", "3.5", "3.8"],
+      "options": [
+        "4",
+        "3",
+        "3.5",
+        "3.8"
+      ],
       "correctAnswer": "4",
       "difficulty": "beginner",
       "category": "Math",
@@ -81,7 +106,12 @@
     {
       "id": "m6",
       "text": "What is the next number in the sequence: 2, 4, 6, 8, ?",
-      "options": ["10", "12", "9", "11"],
+      "options": [
+        "10",
+        "12",
+        "9",
+        "11"
+      ],
       "correctAnswer": "10",
       "difficulty": "beginner",
       "category": "Math",
@@ -90,7 +120,12 @@
     {
       "id": "m7",
       "text": "What is the perimeter of a square with sides of 5cm?",
-      "options": ["20cm", "25cm", "15cm", "10cm"],
+      "options": [
+        "20cm",
+        "25cm",
+        "15cm",
+        "10cm"
+      ],
       "correctAnswer": "20cm",
       "difficulty": "advanced",
       "category": "Math",
@@ -99,7 +134,12 @@
     {
       "id": "m8",
       "text": "What is 1/4 of 100?",
-      "options": ["25", "20", "30", "40"],
+      "options": [
+        "25",
+        "20",
+        "30",
+        "40"
+      ],
       "correctAnswer": "25",
       "difficulty": "intermediate",
       "category": "Math",
@@ -108,7 +148,12 @@
     {
       "id": "m9",
       "text": "How many minutes are in 2 hours?",
-      "options": ["120", "90", "100", "140"],
+      "options": [
+        "120",
+        "90",
+        "100",
+        "140"
+      ],
       "correctAnswer": "120",
       "difficulty": "beginner",
       "category": "Math",
@@ -117,7 +162,12 @@
     {
       "id": "m10",
       "text": "What is the area of a rectangle with length 6cm and width 4cm?",
-      "options": ["24cm²", "20cm²", "22cm²", "26cm²"],
+      "options": [
+        "24cm²",
+        "20cm²",
+        "22cm²",
+        "26cm²"
+      ],
       "correctAnswer": "24cm²",
       "difficulty": "advanced",
       "category": "Math",
@@ -129,7 +179,13 @@
       "id": "1",
       "title": "Basic Addition and Multiplication",
       "description": "Practice your basic math skills with simple operations",
-      "questions": ["m1", "m2", "m5", "m6", "m9"],
+      "questions": [
+        "m1",
+        "m2",
+        "m5",
+        "m6",
+        "m9"
+      ],
       "timeLimit": 20,
       "passingScore": 60,
       "isPublished": true,
@@ -144,7 +200,13 @@
       "id": "2",
       "title": "Division and Fractions",
       "description": "Test your knowledge of division and fractions",
-      "questions": ["m3", "m4", "m8", "m1", "m2"],
+      "questions": [
+        "m3",
+        "m4",
+        "m8",
+        "m1",
+        "m2"
+      ],
       "timeLimit": 25,
       "passingScore": 70,
       "isPublished": true,
@@ -159,7 +221,13 @@
       "id": "3",
       "title": "Geometry Basics",
       "description": "Learn about shapes, perimeter, and area",
-      "questions": ["m7", "m10", "m5", "m8", "m4"],
+      "questions": [
+        "m7",
+        "m10",
+        "m5",
+        "m8",
+        "m4"
+      ],
       "timeLimit": 30,
       "passingScore": 75,
       "isPublished": true,
@@ -174,7 +242,13 @@
       "id": "4",
       "title": "Mixed Math Practice",
       "description": "Challenge yourself with various math problems",
-      "questions": ["m2", "m4", "m6", "m8", "m10"],
+      "questions": [
+        "m2",
+        "m4",
+        "m6",
+        "m8",
+        "m10"
+      ],
       "timeLimit": 35,
       "passingScore": 80,
       "isPublished": true,
@@ -189,7 +263,13 @@
       "id": "5",
       "title": "Math Master Challenge",
       "description": "Test all your math skills in one quiz",
-      "questions": ["m1", "m3", "m5", "m7", "m9"],
+      "questions": [
+        "m1",
+        "m3",
+        "m5",
+        "m7",
+        "m9"
+      ],
       "timeLimit": 40,
       "passingScore": 85,
       "isPublished": false,
@@ -212,7 +292,10 @@
       "completed": true,
       "percentage": 90,
       "timestamp": "2024-04-12T14:30:00.000Z",
-      "achievements": ["speed_demon", "perfect_score"]
+      "achievements": [
+        "speed_demon",
+        "perfect_score"
+      ]
     },
     {
       "id": "r2",
@@ -224,7 +307,75 @@
       "completed": true,
       "percentage": 85,
       "timestamp": "2024-04-11T16:45:00.000Z",
-      "achievements": ["quick_learner"]
+      "achievements": [
+        "quick_learner"
+      ]
+    },
+    {
+      "id": "1744596383001",
+      "studentName": "test",
+      "score": 6,
+      "totalQuestions": 10,
+      "answers": [
+        "14",
+        "36",
+        "23",
+        "6",
+        "4",
+        "10",
+        "20cm",
+        "25",
+        "120",
+        "26cm²"
+      ],
+      "timestamp": 1744596382961,
+      "timeRemaining": 24,
+      "completed": false,
+      "percentage": 60
+    },
+    {
+      "id": "1744596651843",
+      "studentName": "Kamal",
+      "score": 9,
+      "totalQuestions": 10,
+      "answers": [
+        "15",
+        "36",
+        "21",
+        "8",
+        "4",
+        "10",
+        "25cm",
+        "25",
+        "120",
+        "24cm²"
+      ],
+      "timestamp": 1744596651820,
+      "timeRemaining": 24,
+      "completed": true,
+      "percentage": 90
+    },
+    {
+      "id": "1744596849993",
+      "studentName": "Kamal",
+      "score": 3,
+      "totalQuestions": 10,
+      "answers": [
+        "14",
+        "36",
+        "20",
+        "6",
+        "3.8",
+        "11",
+        "10cm",
+        "40",
+        "120",
+        "24cm²"
+      ],
+      "timestamp": 1744596849980,
+      "timeRemaining": 24,
+      "completed": false,
+      "percentage": 30
     }
   ],
   "settings": {
@@ -240,9 +391,9 @@
     "lastUpdated": "2024-04-01T12:00:00.000Z"
   },
   "stats": {
-    "totalAttempts": 425,
-    "completedAttempts": 398,
-    "totalScore": 34275,
+    "totalAttempts": 428,
+    "completedAttempts": 399,
+    "totalScore": 34455,
     "averageScore": 80.65,
     "completionRate": 93.65,
     "performanceTrend": [
@@ -306,6 +457,51 @@
       "timestamp": "2024-04-12T11:30:00.000Z",
       "ipAddress": "192.168.1.100",
       "userAgent": "Mozilla/5.0"
+    },
+    {
+      "id": "1744596383009",
+      "userId": "system",
+      "action": "QUIZ_SUBMISSION",
+      "details": {
+        "studentId": "test",
+        "score": "6/10",
+        "percentage": "60.0%",
+        "completed": false,
+        "timeRemaining": 24
+      },
+      "timestamp": "2025-04-14T02:06:23.009Z",
+      "ipAddress": "",
+      "userAgent": ""
+    },
+    {
+      "id": "1744596651850",
+      "userId": "system",
+      "action": "QUIZ_SUBMISSION",
+      "details": {
+        "studentId": "Kamal",
+        "score": "9/10",
+        "percentage": "90.0%",
+        "completed": true,
+        "timeRemaining": 24
+      },
+      "timestamp": "2025-04-14T02:10:51.850Z",
+      "ipAddress": "",
+      "userAgent": ""
+    },
+    {
+      "id": "1744596849995",
+      "userId": "system",
+      "action": "QUIZ_SUBMISSION",
+      "details": {
+        "studentId": "Kamal",
+        "score": "3/10",
+        "percentage": "30.0%",
+        "completed": false,
+        "timeRemaining": 24
+      },
+      "timestamp": "2025-04-14T02:14:09.995Z",
+      "ipAddress": "",
+      "userAgent": ""
     }
   ],
   "achievements": [

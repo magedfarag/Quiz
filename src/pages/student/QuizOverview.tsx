@@ -218,7 +218,7 @@ const QuizOverview: React.FC = () => {
 
           {/* Start Button */}
           <motion.button 
-            className="w-full py-4 px-8 bg-gradient-to-r from-primary-500 to-primary-600 text-white text-xl font-bold rounded-xl shadow-lg hover:shadow-xl transform transition-all hover:-translate-y-1 flex items-center justify-center gap-3"
+            className="w-full py-4 px-8 bg-gradient-to-r from-accent-blue to-accent-purple text-white text-xl font-bold rounded-xl shadow-lg hover:shadow-xl transform transition-all hover:-translate-y-1 flex items-center justify-center gap-3"
             onClick={() => navigate('/quiz', { state: { studentName, quizId } })}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
