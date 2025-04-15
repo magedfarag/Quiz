@@ -77,7 +77,7 @@ export const updateUser = async (userId: string, userData: Record<string, any>) 
 export const adminApi = {
   // Users
   async getUsers() {
-    const response = await fetch(`${API_URL}/quizzes`);
+    const response = await fetch(`${API_URL}/users`);
     if (!response.ok) throw new Error('Failed to fetch users');
     return response.json();
   },

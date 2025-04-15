@@ -376,6 +376,50 @@
       "timeRemaining": 24,
       "completed": false,
       "percentage": 30
+    },
+    {
+      "id": "1744625903974",
+      "studentName": "Ali",
+      "score": 3,
+      "totalQuestions": 10,
+      "answers": [
+        "14",
+        "36",
+        "21",
+        "8",
+        "3",
+        "12",
+        "25cm",
+        "20",
+        "90",
+        "20cm²"
+      ],
+      "timestamp": 1744625903955,
+      "timeRemaining": 29,
+      "completed": false,
+      "percentage": 30
+    },
+    {
+      "id": "1744632209501",
+      "studentName": "Ahmed",
+      "score": 8,
+      "totalQuestions": 10,
+      "answers": [
+        "15",
+        "36",
+        "21",
+        "8",
+        "3.8",
+        "12",
+        "20cm",
+        "25",
+        "120",
+        "24cm²"
+      ],
+      "timestamp": 1744632209497,
+      "timeRemaining": 28,
+      "completed": true,
+      "percentage": 80
     }
   ],
   "settings": {
@@ -391,9 +435,9 @@
     "lastUpdated": "2024-04-01T12:00:00.000Z"
   },
   "stats": {
-    "totalAttempts": 428,
-    "completedAttempts": 399,
-    "totalScore": 34455,
+    "totalAttempts": 430,
+    "completedAttempts": 400,
+    "totalScore": 34565,
     "averageScore": 80.65,
     "completionRate": 93.65,
     "performanceTrend": [
@@ -500,6 +544,36 @@
         "timeRemaining": 24
       },
       "timestamp": "2025-04-14T02:14:09.995Z",
+      "ipAddress": "",
+      "userAgent": ""
+    },
+    {
+      "id": "1744625903975",
+      "userId": "system",
+      "action": "QUIZ_SUBMISSION",
+      "details": {
+        "studentId": "Ali",
+        "score": "3/10",
+        "percentage": "30.0%",
+        "completed": false,
+        "timeRemaining": 29
+      },
+      "timestamp": "2025-04-14T10:18:23.975Z",
+      "ipAddress": "",
+      "userAgent": ""
+    },
+    {
+      "id": "1744632209502",
+      "userId": "system",
+      "action": "QUIZ_SUBMISSION",
+      "details": {
+        "studentId": "Ahmed",
+        "score": "8/10",
+        "percentage": "80.0%",
+        "completed": true,
+        "timeRemaining": 28
+      },
+      "timestamp": "2025-04-14T12:03:29.502Z",
       "ipAddress": "",
       "userAgent": ""
     }

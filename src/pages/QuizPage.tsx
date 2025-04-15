@@ -317,8 +317,8 @@ const QuizPage: React.FC = () => {
         </div>
 
         <div className="mb-4 p-4 bg-gray-100 rounded">
-          <h3 className="font-bold">Debug Info:</h3>
-          <pre className="text-sm">
+          <h3 className="font-bold hidden">Debug Info:</h3>
+          <pre className="text-sm hidden">
             {JSON.stringify({
               questionsLoaded: questions.length > 0,
               currentIndex: currentQuestionIndex,
