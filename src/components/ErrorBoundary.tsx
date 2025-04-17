@@ -1,6 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { Home } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { AlertCircle, RefreshCw, Home } from 'lucide-react';
 
 interface Props {
   children: ReactNode;
@@ -9,83 +10,87 @@ interface Props {
 
 interface State {
   hasError: boolean;
-  error: Error | null;
-  errorInfo: ErrorInfo | null;
+  error?: Error;
+  errorInfo?: ErrorInfo;
 }
 
 class ErrorBoundary extends Component<Props, State> {
   public state: State = {
     hasError: false,
-    error: null,
-    errorInfo: null
   };
 
-  public static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error, errorInfo: null };
+  static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, error };
   }
 
-  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Uncaught error:', error, errorInfo);
-    this.setState({
-      error,
-      errorInfo
-    });
+  componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+    console.error('Error caught by ErrorBoundary:', error, errorInfo);
+    this.setState({ error, errorInfo });
+    
+    // You could also log the error to an error reporting service here
+    // logErrorToService(error, errorInfo);
   }
 
-  private getErrorMessage(error: Error): string {
-    if (error.message.includes('Cannot access')) {
-      return 'There was a problem loading the quiz data. Please try again.';
-    }
-    if (error.message.includes('Network')) {
-      return 'Unable to connect to the server. Please check your internet connection.';
-    }
-    return 'Something went wrong. Please try again later.';
-  }
+  handleReset = (): void => {
+    this.setState({ hasError: false, error: undefined, errorInfo: undefined });
+  };
 
-  public render() {
+  render(): ReactNode {
     if (this.state.hasError) {
-      return this.props.fallback || (
+      if (this.props.fallback) {
+        return this.props.fallback;
+      }
+
+      // Default error UI
+      return (
         <div className="min-h-screen bg-gradient-to-b from-background to-primary-light p-8 flex items-center justify-center">
-          <div className="bg-white rounded-xl shadow-lg p-8 max-w-md w-full">
-            <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-4xl">⚠️</span>
+          <motion.div 
+            className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <div className="flex justify-center mb-6">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+                <AlertCircle className="w-10 h-10 text-red-600" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">Oops! Something went wrong</h2>
-              <p className="text-gray-600 mb-6">
-                {this.state.error && this.getErrorMessage(this.state.error)}
-              </p>
             </div>
-            
-            <div className="space-y-4">
+            <h1 className="text-2xl font-bold text-gray-800 mb-2">Oops! Something went wrong</h1>
+            <p className="text-gray-600 mb-6">
+              We've encountered an unexpected error. Please try refreshing the page or return to the home page.
+            </p>
+            {this.state.error && (
+              <div className="bg-gray-50 p-4 rounded-lg mb-6 text-left overflow-auto">
+                <p className="text-sm font-mono text-red-600 mb-2">{this.state.error.message}</p>
+                {this.state.errorInfo && (
+                  <details className="text-xs text-gray-700">
+                    <summary className="cursor-pointer py-1">View details</summary>
+                    <pre className="mt-2 whitespace-pre-wrap">
+                      {this.state.errorInfo.componentStack}
+                    </pre>
+                  </details>
+                )}
+              </div>
+            )}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
-                onClick={() => window.location.reload()}
-                className="w-full bg-primary-600 text-white py-2 px-4 rounded-lg hover:bg-primary-700 transition"
+                onClick={this.handleReset}
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-xl
+                  hover:bg-primary-700 transition transform hover:scale-105"
               >
+                <RefreshCw className="w-5 h-5" />
                 Try Again
               </button>
-              
               <Link
                 to="/"
-                className="block w-full text-center py-2 px-4 border border-gray-300 rounded-lg 
-                  hover:bg-gray-50 transition flex items-center justify-center gap-2"
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-200 rounded-xl
+                  hover:bg-gray-300 transition transform hover:scale-105"
               >
-                <Home className="w-4 h-4" />
-                Return Home
+                <Home className="w-5 h-5" />
+                Go Home
               </Link>
             </div>
-
-            {process.env.NODE_ENV === 'development' && this.state.errorInfo && (
-              <details className="mt-6 p-4 bg-gray-50 rounded-lg">
-                <summary className="text-sm text-gray-600 cursor-pointer">Error Details</summary>
-                <pre className="mt-2 text-xs text-red-600 overflow-auto">
-                  {this.state.error && this.state.error.toString()}
-                  <br />
-                  {this.state.errorInfo.componentStack}
-                </pre>
-              </details>
-            )}
-          </div>
+          </motion.div>
         </div>
       );
     }

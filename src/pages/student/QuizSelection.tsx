@@ -76,11 +76,21 @@ const QuizSelection: React.FC = () => {
     hard: 'bg-red-100 text-red-700'
   };
 
+  const handleQuizStart = (quiz) => {
+    console.log('Navigating to QuizEngine with quiz:', quiz);
+    navigate('/quiz-engine', {
+      state: {
+        studentName,
+        quiz
+      },
+    });
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="min-h-screen bg-gradient-to-b from-primary-50 to-primary-100 py-8 px-4"
+      className="min-h-screen bg-gradient-to-b from-background to-primary-light p-8"
     >
       <div className="max-w-6xl mx-auto">
         <header className="text-center mb-12">
@@ -141,13 +151,7 @@ const QuizSelection: React.FC = () => {
                 animate={{ scale: 1, opacity: 1 }}
                 whileHover={{ scale: 1.02 }}
                 className="bg-white rounded-2xl shadow-lg overflow-hidden cursor-pointer transition-all"
-                onClick={() => navigate('/quiz-overview', { 
-                  state: { 
-                    studentName, 
-                    quizId: quiz.id,
-                    quiz: quiz
-                  } 
-                })}
+                onClick={() => handleQuizStart(quiz)}
               >
                 <div className="p-6">
                   <div className="flex items-start justify-between mb-4">

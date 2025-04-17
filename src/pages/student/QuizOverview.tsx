@@ -3,36 +3,50 @@ import { motion } from 'framer-motion';
 import { Clock, Book, Award, AlertCircle, Rocket, Star, Brain } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { fetchSettings } from '../../api/admin';
+import { adminApi } from '../../api/admin';
 import type { AdminSettings } from '../../types/settings';
+import type { Quiz } from '../../types/quiz';
 
 const QuizOverview: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { studentName, quizId } = location.state || {};
+  const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [settings, setSettings] = useState<AdminSettings | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Redirect if no student name is provided
-    if (!studentName) {
+    // Redirect if no student name or quizId is provided
+    if (!studentName || !quizId) {
       navigate('/', { replace: true });
       return;
     }
 
-    const loadSettings = async () => {
+    const loadData = async () => {
       try {
-        const adminSettings = await fetchSettings();
+        setLoading(true);
+        setError(null);
+        
+        // Fetch settings and quiz data in parallel for better performance
+        const [adminSettings, quizData] = await Promise.all([
+          fetchSettings(),
+          adminApi.getQuiz(quizId)
+        ]);
+        
         setSettings(adminSettings);
+        setQuiz(quizData);
+        console.log('Loaded quiz data from server:', quizData);
       } catch (error) {
-        setError('Failed to load quiz settings');
-        console.error('Error loading settings:', error);
+        console.error('Error loading quiz data:', error);
+        setError('Failed to load quiz data. Please try again later.');
       } finally {
         setLoading(false);
       }
     };
-    loadSettings();
-  }, [studentName, navigate]);
+    
+    loadData();
+  }, [studentName, quizId, navigate]);
 
   if (loading) {
     return (
@@ -61,7 +75,7 @@ const QuizOverview: React.FC = () => {
     );
   }
 
-  if (!settings) return null;
+  if (!settings || !quiz) return null;
 
   const heroIcons = [
     { icon: Brain, color: 'text-purple-500', delay: 0 },
@@ -102,7 +116,7 @@ const QuizOverview: React.FC = () => {
             initial={{ y: -20 }}
             animate={{ y: 0 }}
           >
-            Ready for an Adventure?
+            {quiz.title}
           </motion.h1>
           <motion.p 
             className="text-xl text-primary-600"
@@ -112,6 +126,16 @@ const QuizOverview: React.FC = () => {
           >
             Hi {studentName}! Let's see what you can do! 🌟
           </motion.p>
+          {quiz.description && (
+            <motion.p
+              className="mt-4 text-lg text-gray-700"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+            >
+              {quiz.description}
+            </motion.p>
+          )}
         </header>
 
         {/* Quiz Info Card */}
@@ -137,7 +161,7 @@ const QuizOverview: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-blue-600">Time Limit</p>
-                  <p className="text-2xl font-bold text-blue-800">{settings.quizTimeLimit} min</p>
+                  <p className="text-2xl font-bold text-blue-800">{quiz.timeLimit || settings.quizTimeLimit} min</p>
                 </div>
               </div>
             </motion.div>
@@ -152,7 +176,7 @@ const QuizOverview: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-purple-600">To Pass</p>
-                  <p className="text-2xl font-bold text-purple-800">{settings.passingScore}%</p>
+                  <p className="text-2xl font-bold text-purple-800">{quiz.passingScore || settings.passingScore}%</p>
                 </div>
               </div>
             </motion.div>
@@ -167,7 +191,7 @@ const QuizOverview: React.FC = () => {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-green-600">Questions</p>
-                  <p className="text-2xl font-bold text-green-800">{settings.maxQuestions}</p>
+                  <p className="text-2xl font-bold text-green-800">{quiz.questions.length}</p>
                 </div>
               </div>
             </motion.div>
@@ -219,7 +243,7 @@ const QuizOverview: React.FC = () => {
           {/* Start Button */}
           <motion.button 
             className="w-full py-4 px-8 bg-gradient-to-r from-accent-blue to-accent-purple text-white text-xl font-bold rounded-xl shadow-lg hover:shadow-xl transform transition-all hover:-translate-y-1 flex items-center justify-center gap-3"
-            onClick={() => navigate('/quiz', { state: { studentName, quizId } })}
+            onClick={() => navigate('/quiz', { state: { studentName, quizId }})}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >

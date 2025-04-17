@@ -147,6 +147,28 @@ app.get('/api/questions', (req, res, next) => {
   }
 });
 
+// Get a single question by ID
+app.get('/api/questions/:id', (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const db = readDatabase();
+    
+    if (!Array.isArray(db.questions)) {
+      return res.status(404).json({ error: 'Question not found' });
+    }
+    
+    const question = db.questions.find(q => q.id === id);
+    if (!question) {
+      return res.status(404).json({ error: 'Question not found' });
+    }
+    
+    res.json(question);
+  } catch (error) {
+    console.error('Error fetching question:', error);
+    res.status(500).json({ error: 'Failed to fetch question' });
+  }
+});
+
 // Submit quiz results
 app.post('/api/results', (req, res, next) => {
   try {
@@ -156,15 +178,34 @@ app.post('/api/results', (req, res, next) => {
     }
 
     const db = readDatabase();
+    
+    // Initialize required data structures if they don't exist
     if (!db.results) {
       db.results = [];
     }
+    if (!db.userAchievements) {
+      db.userAchievements = {};
+    }
+    if (!db.stats) {
+      db.stats = {
+        totalAttempts: 0,
+        completedAttempts: 0,
+        totalScore: 0
+      };
+    }
+    
+    // Create student entry if needed
+    if (!db.userAchievements[studentName]) {
+      db.userAchievements[studentName] = [];
+      console.log(`Created new user record for: ${studentName}`);
+    }
 
-    // Calculate if quiz was completed based on settings
+    // Calculate quiz completion data based on settings
     const settings = db.settings || { passingScore: 70 };
     const percentage = (score / totalQuestions) * 100;
     const completed = percentage >= settings.passingScore;
 
+    // Create the new result object
     const newResult = {
       id: Date.now().toString(),
       studentName,
@@ -177,24 +218,90 @@ app.post('/api/results', (req, res, next) => {
       percentage
     };
 
+    // STEP 1: Save the result to the database first
     db.results.push(newResult);
-
-    // Update statistics
-    if (!db.stats) {
-      db.stats = {
-        totalAttempts: 0,
-        completedAttempts: 0,
-        totalScore: 0
-      };
-    }
-
+    
+    // Update global statistics
     db.stats.totalAttempts++;
     if (completed) {
       db.stats.completedAttempts++;
     }
     db.stats.totalScore += percentage;
     
+    // Save the database with the new result before calculating achievements
     writeDatabase(db);
+    
+    // STEP 2: After saving results, calculate achievements
+    const earnedAchievements = [];
+    
+    // Calculate user-specific stats based on all their saved results
+    const userResults = db.results.filter(r => r.studentName === studentName);
+    const isFirstQuiz = userResults.length === 1;
+    
+    // First Steps achievement - automatic for first quiz
+    if (isFirstQuiz) {
+      earnedAchievements.push(1); // First Steps achievement ID
+    }
+    
+    // Perfect Score achievement
+    if (percentage === 100) {
+      earnedAchievements.push(3); // Perfect Score achievement ID
+    }
+    
+    // Excellence Badge achievement (90%+)
+    if (percentage >= 90 && percentage < 100) {
+      earnedAchievements.push(6); // Excellence Badge achievement ID
+    }
+    
+    // Speed Demon achievement
+    if (timeRemaining && settings.quizTimeLimit) {
+      const timeRemainingPercent = (timeRemaining / (settings.quizTimeLimit * 60)) * 100;
+      if (timeRemainingPercent >= 50) {
+        earnedAchievements.push(2); // Speed Demon achievement ID
+      }
+    }
+    
+    // Quick Learner achievement (5 passed quizzes)
+    const passedQuizzes = userResults.filter(r => r.completed).length;
+    if (passedQuizzes >= 5 && !db.userAchievements[studentName].includes(4)) {
+      earnedAchievements.push(4); // Quick Learner achievement ID
+    }
+    
+    // Knowledge Master achievement (90%+ avg across 10+ quizzes)
+    if (userResults.length >= 10) {
+      const avgScore = userResults.reduce((acc, r) => acc + r.percentage, 0) / userResults.length;
+      if (avgScore >= 90 && !db.userAchievements[studentName].includes(5)) {
+        earnedAchievements.push(5); // Knowledge Master achievement ID
+      }
+    }
+    
+    // STEP 3: Apply earned achievements
+    const newAchievements = earnedAchievements.filter(id => 
+      !db.userAchievements[studentName].includes(id)
+    );
+    
+    if (newAchievements.length > 0) {
+      db.userAchievements[studentName].push(...newAchievements);
+      
+      // Update earned count for each achievement
+      newAchievements.forEach(id => {
+        const achievement = db.achievements?.find(a => a.id === id);
+        if (achievement) {
+          achievement.earnedCount = (achievement.earnedCount || 0) + 1;
+        }
+      });
+      
+      // Log achievement earnings
+      logAdminActivity('system', 'ACHIEVEMENT_EARNED', {
+        studentName,
+        achievements: newAchievements
+      });
+      
+      console.log(`User ${studentName} earned achievements: ${newAchievements.join(', ')}`);
+      
+      // Save the database again with the updated achievements
+      writeDatabase(db);
+    }
 
     // Log activity for analytics
     logAdminActivity('system', 'QUIZ_SUBMISSION', {
@@ -203,11 +310,16 @@ app.post('/api/results', (req, res, next) => {
       score: `${score}/${totalQuestions}`,
       percentage: percentage.toFixed(1) + '%',
       completed,
-      timeRemaining
+      timeRemaining,
+      newAchievements: newAchievements
     });
 
-    res.status(201).json(newResult);
+    res.status(201).json({ 
+      ...newResult,
+      earnedAchievements: newAchievements // Include newly earned achievements in response
+    });
   } catch (error) {
+    console.error('Error submitting quiz result:', error);
     next(error);
   }
 });
@@ -246,7 +358,7 @@ function generateRecentActivity(results) {
     .map(r => ({
       type: 'quiz_completion',
       user: r.studentName,
-      score: r.score,
+      score: Math.round((r.score / r.totalQuestions) * 100), // Calculate percentage correctly
       timestamp: r.timestamp
     }));
 }
@@ -262,7 +374,9 @@ function generatePerformanceTrend(results) {
       .slice(0, 7)
       .map(r => ({
         date: new Date(r.timestamp).toISOString().split('T')[0],
-        score: typeof r.score === 'number' ? r.score : 0
+        score: typeof r.score === 'number' && typeof r.totalQuestions === 'number' 
+          ? Math.round((r.score / r.totalQuestions) * 100) 
+          : 0
       }));
   } catch (error) {
     console.error('Error generating performance trend:', error);
@@ -287,8 +401,11 @@ app.get('/api/results/stats', (req, res, next) => {
         return { score, count };
       });
 
-    // Calculate performance trend
-    const performanceTrend = calculatePerformanceTrend(results);
+    // Calculate completion trend
+    const completionTrend = calculatePerformanceTrend(results).map(day => ({
+      date: day.date,
+      completions: day.attempts || 0
+    }));
 
     // Calculate stats using helper functions
     const stats = {
@@ -296,7 +413,8 @@ app.get('/api/results/stats', (req, res, next) => {
       averageScore: calculateAverageScore(results),
       completionRate: calculateCompletionRate(results),
       scoreDistribution,
-      performanceTrend
+      completionTrend,
+      performanceTrend: calculatePerformanceTrend(results)
     };
 
     res.json(stats);
@@ -525,66 +643,33 @@ app.get('/api/admin/settings', (req, res, next) => {
 // Update admin settings
 app.put('/api/admin/settings', (req, res) => {
   try {
-    const updatedSettings = req.body;
-    
-    if (!updatedSettings || typeof updatedSettings !== 'object') {
-      return res.status(400).json({ 
-        error: 'Invalid settings data',
-        details: ['Settings object is required'] 
-      });
+    const { settings } = req.body; // Expect settings object in the body
+    if (!settings) {
+      return res.status(400).json({ error: 'Missing settings data in request body' });
+    }
+
+    // Validate the received settings object
+    const validationErrors = validatePartialSettings(settings);
+    if (validationErrors.length > 0) {
+      return res.status(400).json({ error: 'Validation failed', details: validationErrors });
     }
 
     const db = readDatabase();
-    const currentSettings = db.settings || {
-      quizTimeLimit: 30,
-      passingScore: 70,
-      maxQuestions: 10,
-      requireEmailVerification: false,
-      allowRetakes: true,
-      showResults: true,
-      maxAttempts: 3,
-      feedbackMode: 'afterSubmission',
-      gradingScheme: 'percentage'
-    };
-
-    // Validate only the fields being updated
-    const validationErrors = validatePartialSettings(updatedSettings);
-    if (validationErrors.length > 0) {
-      return res.status(400).json({ 
-        error: 'Validation failed',
-        details: validationErrors 
-      });
-    }
-
-    // Merge current settings with updates
-    const newSettings = {
-      ...currentSettings,
-      ...updatedSettings,
-      lastUpdated: new Date().toISOString()
-    };
-
-    db.settings = newSettings;
+    // Merge partial settings with existing ones
+    db.settings = { ...db.settings, ...settings };
     writeDatabase(db);
 
-    // Log settings changes
-    logAdminActivity('admin', 'UPDATE_SETTINGS', {
-      changes: Object.keys(updatedSettings).join(', ')
-    });
+    // Log the activity
+    logAdminActivity('admin', 'SETTINGS_UPDATED', { updatedFields: Object.keys(settings) });
 
-    res.json({ 
-      message: 'Settings updated successfully',
-      settings: newSettings
-    });
+    res.json({ message: 'Settings updated successfully', settings: db.settings });
   } catch (error) {
     console.error('Error updating settings:', error);
-    res.status(500).json({ 
-      error: 'Failed to update settings',
-      details: [error.message]
-    });
+    res.status(500).json({ error: 'Failed to update settings' });
   }
 });
 
-const validatePartialSettings = (settings) => {
+const validatePartialSettings = (settingsToValidate) => { // Renamed parameter
   const validationRules = {
     quizTimeLimit: { type: 'number', min: 1, max: 180 },
     passingScore: { type: 'number', min: 0, max: 100 },
@@ -599,34 +684,27 @@ const validatePartialSettings = (settings) => {
 
   const errors = [];
   
-  Object.entries(settings).forEach(([field, value]) => {
-    const rules = validationRules[field];
-    if (!rules) {
-      errors.push(`Unknown field: ${field}`);
-      return;
+  // Validate against the settingsToValidate object directly
+  Object.entries(settingsToValidate).forEach(([field, value]) => {
+    const rule = validationRules[field];
+    if (!rule) {
+      // errors.push(`Unknown field: ${field}`); // Commented out - allow extra fields for now
+      return; // Skip unknown fields for flexibility, or uncomment to enforce strictness
     }
 
-    if (value === undefined || value === null) {
-      errors.push(`Invalid value for ${field}: cannot be null or undefined`);
-      return;
+    if (typeof value !== rule.type) {
+      errors.push(`Field '${field}' must be type ${rule.type}, but received ${typeof value}`);
+      return; // Stop further validation for this field if type is wrong
     }
 
-    if (rules.type === 'number') {
-      if (typeof value !== 'number' || isNaN(value)) {
-        errors.push(`${field} must be a valid number`);
-      } else if (value < rules.min || value > rules.max) {
-        errors.push(`${field} must be between ${rules.min} and ${rules.max}`);
+    if (rule.type === 'number') {
+      if (value < rule.min || value > rule.max) {
+        errors.push(`Field '${field}' must be between ${rule.min} and ${rule.max}`);
       }
-    } else if (rules.type === 'boolean') {
-      if (typeof value !== 'boolean') {
-        errors.push(`${field} must be a boolean`);
-      }
-    } else if (rules.type === 'string') {
-      if (typeof value !== 'string') {
-        errors.push(`${field} must be a string`);
-      } else if (rules.values && !rules.values.includes(value)) {
-        errors.push(`${field} must be one of: ${rules.values.join(', ')}`);
-      }
+    }
+
+    if (rule.type === 'string' && rule.values && !rule.values.includes(value)) {
+      errors.push(`Field '${field}' must be one of: ${rule.values.join(', ')}`);
     }
   });
 
@@ -1105,53 +1183,110 @@ app.get('/api/achievements', (req, res) => {
           name: "First Steps",
           description: "Complete your first quiz",
           icon: "star",
+          isActive: true,
           conditions: {
             quizzes_completed: 1
-          }
+          },
+          earnedCount: 0
         },
         {
           id: 2,
           name: "Speed Demon",
           description: "Complete a quiz in less than half the time limit",
           icon: "zap",
+          isActive: true,
           conditions: {
             time_remaining_percent: 50
-          }
+          },
+          earnedCount: 0
         },
         {
           id: 3,
           name: "Perfect Score",
           description: "Get 100% on any quiz",
           icon: "award",
+          isActive: true,
           conditions: {
             score_percent: 100
-          }
+          },
+          earnedCount: 0
         },
         {
           id: 4,
           name: "Quick Learner",
           description: "Complete 5 quizzes with passing scores",
           icon: "brain",
+          isActive: true,
           conditions: {
             passed_quizzes: 5
-          }
+          },
+          earnedCount: 0
         },
         {
           id: 5,
           name: "Knowledge Master",
           description: "Maintain a 90%+ average across 10 quizzes",
           icon: "trophy",
+          isActive: true,
           conditions: {
             min_average: 90,
             min_quizzes: 10
-          }
+          },
+          earnedCount: 0
+        },
+        {
+          id: 6,
+          name: "Excellence Badge",
+          description: "Score 90% or higher on any quiz",
+          icon: "award",
+          isActive: true,
+          conditions: {
+            score_percent: 90
+          },
+          earnedCount: 0
         }
       ];
       writeDatabase(db);
+    } else {
+      // Check if Excellence Badge exists, add it if it doesn't
+      if (!db.achievements.some(a => a.id === 6 && a.name === "Excellence Badge")) {
+        db.achievements.push({
+          id: 6,
+          name: "Excellence Badge",
+          description: "Score 90% or higher on any quiz",
+          icon: "award",
+          isActive: true,
+          conditions: {
+            score_percent: 90
+          },
+          earnedCount: 0
+        });
+        writeDatabase(db);
+        console.log("Added Excellence Badge achievement to database");
+      }
     }
     res.json(db.achievements);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch achievements' });
+  }
+});
+
+// Debug endpoint to check available question IDs
+app.get('/api/debug/questions', (req, res) => {
+  try {
+    const db = readDatabase();
+    if (!Array.isArray(db.questions)) {
+      return res.json({ questionsCount: 0, questionIds: [] });
+    }
+    
+    const questionIds = db.questions.map(q => q.id);
+    res.json({
+      questionsCount: questionIds.length,
+      questionIds
+    });
+  } catch (error) {
+    console.error('Error fetching question IDs:', error);
+    res.status(500).json({ error: 'Failed to fetch question IDs' });
   }
 });
 
@@ -1396,6 +1531,242 @@ app.delete('/api/quizzes/:id', (req, res) => {
   } catch (error) {
     console.error('Error deleting quiz:', error);
     res.status(500).json({ error: 'Failed to delete quiz' });
+  }
+});
+
+// Achievement Management Endpoints
+app.post('/api/achievements', (req, res) => {
+  try {
+    const { name, description, icon, conditions } = req.body;
+    
+    if (!name || !description || !icon || !conditions) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const db = readDatabase();
+    if (!db.achievements) {
+      db.achievements = [];
+    }
+
+    const newAchievement = {
+      id: Date.now(),
+      name,
+      description,
+      icon,
+      conditions,
+      isActive: true,
+      earnedCount: 0,
+      createdAt: new Date().toISOString()
+    };
+
+    db.achievements.push(newAchievement);
+    writeDatabase(db);
+
+    // Log the activity
+    logAdminActivity('admin', 'CREATE_ACHIEVEMENT', {
+      achievementId: newAchievement.id,
+      name: newAchievement.name
+    });
+
+    res.status(201).json(newAchievement);
+  } catch (error) {
+    console.error('Error creating achievement:', error);
+    res.status(500).json({ error: 'Failed to create achievement' });
+  }
+});
+
+app.put('/api/achievements/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+    const db = readDatabase();
+    
+    if (!db.achievements) {
+      return res.status(404).json({ error: 'Achievement not found' });
+    }
+
+    const achievementIndex = db.achievements.findIndex(a => a.id === parseInt(id));
+    if (achievementIndex === -1) {
+      return res.status(404).json({ error: 'Achievement not found' });
+    }
+
+    const updatedAchievement = {
+      ...db.achievements[achievementIndex],
+      ...updates,
+      updatedAt: new Date().toISOString()
+    };
+
+    db.achievements[achievementIndex] = updatedAchievement;
+    writeDatabase(db);
+
+    // Log the activity
+    logAdminActivity('admin', 'UPDATE_ACHIEVEMENT', {
+      achievementId: id,
+      name: updatedAchievement.name,
+      changes: Object.keys(updates).join(', ')
+    });
+
+    res.json(updatedAchievement);
+  } catch (error) {
+    console.error('Error updating achievement:', error);
+    res.status(500).json({ error: 'Failed to update achievement' });
+  }
+});
+
+app.delete('/api/achievements/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    const db = readDatabase();
+    
+    if (!db.achievements) {
+      return res.status(404).json({ error: 'Achievement not found' });
+    }
+
+    const achievement = db.achievements.find(a => a.id === parseInt(id));
+    if (!achievement) {
+      return res.status(404).json({ error: 'Achievement not found' });
+    }
+
+    // Log the activity before deletion
+    logAdminActivity('admin', 'DELETE_ACHIEVEMENT', {
+      achievementId: id,
+      name: achievement.name
+    });
+
+    db.achievements = db.achievements.filter(a => a.id !== parseInt(id));
+    writeDatabase(db);
+
+    res.json({ message: 'Achievement deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting achievement:', error);
+    res.status(500).json({ error: 'Failed to delete achievement' });
+  }
+});
+
+app.post('/api/users/:studentName/achievements', (req, res) => {
+  try {
+    const { studentName } = req.params;
+    const { achievements } = req.body;
+    const db = readDatabase();
+
+    if (!db.userAchievements) {
+      db.userAchievements = {};
+    }
+
+    if (!db.userAchievements[studentName]) {
+      db.userAchievements[studentName] = [];
+    }
+
+    // Add new achievements only if they don't exist
+    const newAchievements = achievements.filter(id => 
+      !db.userAchievements[studentName].includes(id)
+    );
+
+    if (newAchievements.length > 0) {
+      db.userAchievements[studentName].push(...newAchievements);
+
+      // Update earned count for each achievement
+      newAchievements.forEach(id => {
+        const achievement = db.achievements.find(a => a.id === id);
+        if (achievement) {
+          achievement.earnedCount = (achievement.earnedCount || 0) + 1;
+        }
+      });
+
+      writeDatabase(db);
+
+      // Log the activity
+      logAdminActivity('system', 'ACHIEVEMENT_EARNED', {
+        studentName,
+        achievements: newAchievements
+      });
+    }
+
+    res.json({ message: 'Achievements updated successfully' });
+  } catch (error) {
+    console.error('Error updating user achievements:', error);
+    res.status(500).json({ error: 'Failed to update user achievements' });
+  }
+});
+
+app.get('/api/users/:studentName/achievements', (req, res) => {
+  try {
+    const { studentName } = req.params;
+    const db = readDatabase();
+
+    if (!db.userAchievements) {
+      db.userAchievements = {};
+      writeDatabase(db);
+    }
+
+    if (!db.userAchievements[studentName]) {
+      // Initialize achievements for new user and return empty array
+      db.userAchievements[studentName] = [];
+      writeDatabase(db);
+      console.log(`Created new achievements record for user: ${studentName}`);
+    }
+
+    const achievementIds = db.userAchievements[studentName];
+    
+    // Make sure achievements array exists
+    if (!db.achievements) {
+      db.achievements = [];
+      writeDatabase(db);
+      return res.json([]);
+    }
+    
+    // Filter valid achievements that user has earned
+    const achievements = db.achievements.filter(a => achievementIds.includes(a.id));
+
+    res.json(achievements);
+  } catch (error) {
+    console.error('Error fetching user achievements:', error);
+    res.status(500).json({ error: 'Failed to fetch user achievements' });
+  }
+});
+
+// Add after the other app.get endpoints...
+
+app.get('/api/users/:studentName/stats', (req, res) => {
+  try {
+    const { studentName } = req.params;
+    const db = readDatabase();
+
+    if (!db.results) {
+      db.results = [];
+      writeDatabase(db);
+    }
+
+    // Get all results for this user
+    const userResults = db.results.filter(r => r.studentName === studentName);
+    const passingScore = db.settings?.passingScore || 70;
+
+    // Default stats for new users or users with no quiz attempts
+    const stats = {
+      totalQuizzes: userResults.length,
+      quizzesCompleted: userResults.length,
+      passedQuizzes: userResults.filter(r => 
+        (r.score / r.totalQuestions) * 100 >= passingScore
+      ).length,
+      averageScore: userResults.length > 0 
+        ? Math.round(userResults.reduce((acc, r) => 
+            acc + ((r.score / r.totalQuestions) * 100), 0
+          ) / userResults.length)
+        : 0,
+      recentAttempts: userResults
+        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+        .slice(0, 5)
+        .map(r => ({
+          date: new Date(r.timestamp).toISOString().split('T')[0],
+          score: Math.round((r.score / r.totalQuestions) * 100)
+        }))
+    };
+
+    console.log(`Retrieved stats for user: ${studentName}`);
+    res.json(stats);
+  } catch (error) {
+    console.error('Error fetching user stats:', error);
+    res.status(500).json({ error: 'Failed to fetch user statistics' });
   }
 });
 

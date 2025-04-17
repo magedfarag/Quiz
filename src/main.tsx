@@ -1,10 +1,11 @@
-import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
+import React from 'react';
+import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import ErrorBoundary from '../src/components/ErrorBoundary';
+import ErrorBoundary from './components/ErrorBoundary';
+import RouteError from './components/RouteError';
 import HomePage from './pages/HomePage';
 import QuizPage from './pages/QuizPage';
-import ResultsPage from './pages/ResultsPage';
+import ResultsPageWithErrorBoundary from './pages/ResultsPage';
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminQuizManagement from './pages/admin/AdminQuizManagement';
@@ -12,114 +13,120 @@ import AdminUserManagement from './pages/admin/AdminUserManagement';
 import AdminAnalytics from './pages/admin/AdminAnalytics';
 import AdminSettings from './pages/admin/AdminSettings';
 import AdminAuditLogs from './pages/admin/AdminAuditLogs';
-import AddQuiz from './pages/admin/AddQuiz';
-import EditQuiz from './pages/admin/EditQuiz';
-import AddUser from './pages/admin/AddUser';
-import EditUser from './pages/admin/EditUser';
+import AdminAchievements from './pages/admin/AdminAchievements';
+import QuizOverview from './pages/student/QuizOverview'; // Updated to use student version
+import QuizSelection from './pages/student/QuizSelection';
 import NotFound from './pages/NotFound';
 import Forbidden from './pages/Forbidden';
 import ServerError from './pages/ServerError';
-import QuizOverview from './pages/student/QuizOverview';
-import QuizSelection from './pages/student/QuizSelection';
+import QuizEngine from './components/QuizEngine';
 import './index.css';
 
+// Create the browser router with error handling
 const router = createBrowserRouter([
   {
     path: '/',
     element: <HomePage />,
-    errorElement: <NotFound />
+    errorElement: <RouteError />
   },
   {
     path: '/quiz-selection',
     element: <QuizSelection />,
+    errorElement: <RouteError />
   },
   {
     path: '/quiz-overview',
     element: <QuizOverview />,
+    errorElement: <RouteError />
   },
   {
     path: '/quiz',
     element: <QuizPage />,
+    errorElement: <RouteError />
   },
   {
     path: '/results',
-    element: <ResultsPage />,
+    element: <ResultsPageWithErrorBoundary />,
+    errorElement: <RouteError />
   },
   {
     path: '/admin/login',
     element: <AdminLogin />,
+    errorElement: <RouteError />
   },
   {
     path: '/admin/dashboard',
     element: <AdminDashboard />,
+    errorElement: <RouteError />
   },
   {
     path: '/admin/quiz-management',
     element: <AdminQuizManagement />,
-  },
-  {
-    path: '/admin/quiz-management/add',
-    element: <AddQuiz />,
-  },
-  {
-    path: '/admin/quiz-management/edit/:id',
-    element: <EditQuiz />,
-  },
-  {
-    path: '/admin/user-management',
-    element: <AdminUserManagement />,
-  },
-  {
-    path: '/admin/user-management/add',
-    element: <AddUser />,
-  },
-  {
-    path: '/admin/user-management/edit/:id',
-    element: <EditUser />,
-  },
-  {
-    path: 'admin/users/:id/edit',
-    element: <EditUser />
+    errorElement: <RouteError />
   },
   {
     path: '/admin/analytics',
     element: <AdminAnalytics />,
+    errorElement: <RouteError />
   },
   {
     path: '/admin/settings',
     element: <AdminSettings />,
+    errorElement: <RouteError />
   },
   {
     path: '/admin/audit-logs',
     element: <AdminAuditLogs />,
+    errorElement: <RouteError />
+  },
+  {
+    path: '/admin/user-management',
+    element: <AdminUserManagement />,
+    errorElement: <RouteError />
+  },
+  {
+    path: '/admin/achievements',
+    element: <AdminAchievements />,
+    errorElement: <RouteError />
+  },
+  {
+    path: '/quiz-engine',
+    element: <QuizEngine />,
+    errorElement: <RouteError />
   },
   {
     path: '/404',
     element: <NotFound />,
+    errorElement: <RouteError />
   },
   {
     path: '/403',
     element: <Forbidden />,
+    errorElement: <RouteError />
   },
   {
     path: '/500',
     element: <ServerError />,
+    errorElement: <RouteError />
   },
   {
     path: '*',
     element: <NotFound />,
+    errorElement: <RouteError />
   }
-], {
-  future: {
-    // Remove v7 experimental features
-    v7_relativeSplatPath: true,
-  },
-});
+]);
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
+// Root app wrapped in our custom ErrorBoundary
+const App = () => {
+  return (
     <ErrorBoundary>
       <RouterProvider router={router} />
     </ErrorBoundary>
-  </StrictMode>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
 );

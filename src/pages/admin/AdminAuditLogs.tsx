@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Filter, AlertCircle } from 'lucide-react';
-import AdminLayout from '@/components/AdminLayout';
-import { DashboardCard } from '@/components/admin/DashboardCard';
-import { LoadingSpinner } from '@/components/LoadingSpinner';
-import { adminApi } from '@/api/admin';
-import type { AuditLog } from '@/types/audit';
+import AdminLayout from '../../components/AdminLayout';
+import { DashboardCard } from '../../components/admin/DashboardCard';
+import { LoadingSpinner } from '../../components/LoadingSpinner';
+import { dataService, AuditLog } from '../../api/data';
 
 const MAX_RETRIES = 3;
 
@@ -25,8 +24,9 @@ const AdminAuditLogs: React.FC = () => {
 
       setIsLoading(true);
       setError('');
-      const data = await adminApi.getAuditLogs();
-      setLogs(data);
+      
+      const auditLogs = await dataService.getAuditLogs();
+      setLogs(auditLogs);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch audit logs';
       setError(`Error fetching audit logs: ${errorMessage}`);
@@ -47,12 +47,38 @@ const AdminAuditLogs: React.FC = () => {
     fetchLogs();
   }, []);
 
+  // Format audit log details for display
+  const formatDetails = (details: any): string => {
+    if (!details) return '';
+    
+    if (typeof details === 'string') return details;
+    
+    try {
+      if (typeof details === 'object') {
+        // If details is an object with changes property, return that
+        if (details.changes) return details.changes;
+        
+        // If details has studentId and score, format as a quiz submission
+        if (details.studentId && details.score) {
+          return `Student: ${details.studentId}, Score: ${details.score}`;
+        }
+        
+        // For other objects, stringify them
+        return JSON.stringify(details).substring(0, 50);
+      }
+      
+      return String(details);
+    } catch (e) {
+      return 'Unable to display details';
+    }
+  };
+
   const filteredLogs = logs.filter(log => {
     const query = searchQuery.toLowerCase();
     return (
       log.action.toLowerCase().includes(query) ||
       log.userId.toString().includes(query) ||
-      log.details?.toLowerCase().includes(query) ||
+      formatDetails(log.details).toLowerCase().includes(query) ||
       new Date(log.timestamp).toLocaleString().toLowerCase().includes(query)
     );
   });
@@ -148,7 +174,7 @@ const AdminAuditLogs: React.FC = () => {
                           {log.action}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-sm">{log.details}</td>
+                      <td className="px-4 py-3 text-sm">{formatDetails(log.details)}</td>
                       <td className="px-4 py-3 text-sm font-mono">{log.ipAddress}</td>
                     </tr>
                   ))}

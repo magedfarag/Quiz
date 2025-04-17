@@ -2,8 +2,8 @@ export const API_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:30
 
 import type { User } from '../types/user';
 import type { Quiz } from '../types/quiz';
-import type { AuditLog } from '@/types/audit';
-import { mockAuditLogs } from '@/mocks/auditLogsMock';
+import type { AuditLog } from '@/types/audit'; // This might need adjustment based on your tsconfig paths
+import type { AdminSettings } from '../types/settings.d'; // Added import for AdminSettings
 
 export const fetchQuizStats = async () => {
   const response = await fetch(`${API_URL}/results/stats`);
@@ -33,11 +33,20 @@ export const updateSettings = async (settingsData: AdminSettings) => {
   const response = await fetch(`${API_URL}/admin/settings`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
+    // Wrap settingsData in a 'settings' object as expected by the server
     body: JSON.stringify({ settings: settingsData })
   });
   
   if (!response.ok) {
-    const errorData = await response.json();
+    let errorData: { error: string; details?: any } = { error: 'Failed to update settings' };
+    try {
+      errorData = await response.json();
+      if (errorData.details) {
+        console.error('Server validation errors:', errorData.details);
+      }
+    } catch (e) {
+      console.error('Could not parse error response from server');
+    }
     throw new Error(errorData.error || 'Failed to update settings');
   }
   
@@ -119,6 +128,15 @@ export const adminApi = {
     return response.json();
   },
 
+  // Questions
+  async getQuestion(id: string): Promise<any> {
+    const response = await fetch(`${API_URL}/questions/${id}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch question');
+    }
+    return response.json();
+  },
+
   // Quizzes
   async getQuizzes(): Promise<Quiz[]> {
     const response = await fetch(`${API_URL}/quizzes`);
@@ -177,12 +195,8 @@ export const adminApi = {
 
   // Audit Logs
   async getAuditLogs(): Promise<AuditLog[]> {
-    if (import.meta.env.DEV) {
-      // Use mock data in development
-      return Promise.resolve(mockAuditLogs);
-    }
-
-    const response = await fetch(`${API_URL}/admin/audit-logs`);
+    // Always use the real API endpoint
+    const response = await fetch(`${API_URL}/admin/audit-logs`); // Corrected endpoint
     if (!response.ok) {
       throw new Error('Failed to fetch audit logs');
     }

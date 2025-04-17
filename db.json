@@ -420,6 +420,140 @@
       "timeRemaining": 28,
       "completed": true,
       "percentage": 80
+    },
+    {
+      "id": "1744699722494",
+      "studentName": "Hany",
+      "score": 9,
+      "totalQuestions": 10,
+      "answers": [
+        "15",
+        "36",
+        "21",
+        "8",
+        "4",
+        "10",
+        "25cm",
+        "25",
+        "120",
+        "24cm²"
+      ],
+      "timestamp": 1744699722483,
+      "timeRemaining": 27,
+      "completed": true,
+      "percentage": 90
+    },
+    {
+      "id": "1744777485891",
+      "studentName": "Diaa",
+      "score": 9,
+      "totalQuestions": 10,
+      "answers": [
+        "15",
+        "36",
+        "21",
+        "8",
+        "4",
+        "10",
+        "20cm",
+        "25",
+        "120",
+        "26cm²"
+      ],
+      "timestamp": 1744777485802,
+      "timeRemaining": 29,
+      "completed": true,
+      "percentage": 90
+    },
+    {
+      "id": "1744781604096",
+      "studentName": "Peter",
+      "score": 9,
+      "totalQuestions": 10,
+      "answers": [
+        "15",
+        "36",
+        "21",
+        "8",
+        "4",
+        "10",
+        "20cm",
+        "25",
+        "120",
+        "26cm²"
+      ],
+      "timestamp": 1744781604073,
+      "timeRemaining": 29,
+      "completed": true,
+      "percentage": 90
+    },
+    {
+      "id": "1744786018345",
+      "studentName": "Sam",
+      "score": 5,
+      "totalQuestions": 5,
+      "answers": [
+        "20cm",
+        "24cm²",
+        "4",
+        "25",
+        "8"
+      ],
+      "timestamp": 1744786018324,
+      "timeRemaining": 1771,
+      "completed": true,
+      "percentage": 100
+    },
+    {
+      "id": "1744786075556",
+      "studentName": "Wael",
+      "score": 5,
+      "totalQuestions": 5,
+      "answers": [
+        "21",
+        "8",
+        "25",
+        "15",
+        "36"
+      ],
+      "timestamp": 1744786075544,
+      "timeRemaining": 1472,
+      "completed": true,
+      "percentage": 100
+    },
+    {
+      "id": "1744787474372",
+      "studentName": "yaser",
+      "score": 0,
+      "totalQuestions": 5,
+      "answers": [
+        "20",
+        "6",
+        "20",
+        "13",
+        "35"
+      ],
+      "timestamp": 1744787474343,
+      "timeRemaining": 1492,
+      "completed": false,
+      "percentage": 0
+    },
+    {
+      "id": "1744793601637",
+      "studentName": "Tamer",
+      "score": 4,
+      "totalQuestions": 5,
+      "answers": [
+        "21",
+        "8",
+        "40",
+        "15",
+        "36"
+      ],
+      "timestamp": 1744793601617,
+      "timeRemaining": 1483,
+      "completed": true,
+      "percentage": 80
     }
   ],
   "settings": {
@@ -435,9 +569,9 @@
     "lastUpdated": "2024-04-01T12:00:00.000Z"
   },
   "stats": {
-    "totalAttempts": 430,
-    "completedAttempts": 400,
-    "totalScore": 34565,
+    "totalAttempts": 437,
+    "completedAttempts": 406,
+    "totalScore": 35115,
     "averageScore": 80.65,
     "completionRate": 93.65,
     "performanceTrend": [
@@ -576,6 +710,133 @@
       "timestamp": "2025-04-14T12:03:29.502Z",
       "ipAddress": "",
       "userAgent": ""
+    },
+    {
+      "id": "1744699722496",
+      "userId": "system",
+      "action": "QUIZ_SUBMISSION",
+      "details": {
+        "studentId": "Hany",
+        "score": "9/10",
+        "percentage": "90.0%",
+        "completed": true,
+        "timeRemaining": 27
+      },
+      "timestamp": "2025-04-15T06:48:42.496Z",
+      "ipAddress": "",
+      "userAgent": ""
+    },
+    {
+      "id": "1744777485894",
+      "userId": "system",
+      "action": "QUIZ_SUBMISSION",
+      "details": {
+        "studentId": "Diaa",
+        "score": "9/10",
+        "percentage": "90.0%",
+        "completed": true,
+        "timeRemaining": 29
+      },
+      "timestamp": "2025-04-16T04:24:45.894Z",
+      "ipAddress": "",
+      "userAgent": ""
+    },
+    {
+      "id": "1744781604099",
+      "userId": "system",
+      "action": "QUIZ_SUBMISSION",
+      "details": {
+        "studentId": "Peter",
+        "score": "9/10",
+        "percentage": "90.0%",
+        "completed": true,
+        "timeRemaining": 29,
+        "newAchievements": [
+          1,
+          6
+        ]
+      },
+      "timestamp": "2025-04-16T05:33:24.099Z",
+      "ipAddress": "",
+      "userAgent": ""
+    },
+    {
+      "id": "1744786018348",
+      "userId": "system",
+      "action": "QUIZ_SUBMISSION",
+      "details": {
+        "studentId": "Sam",
+        "score": "5/5",
+        "percentage": "100.0%",
+        "completed": true,
+        "timeRemaining": 1771,
+        "newAchievements": [
+          1,
+          3,
+          2
+        ]
+      },
+      "timestamp": "2025-04-16T06:46:58.348Z",
+      "ipAddress": "",
+      "userAgent": ""
+    },
+    {
+      "id": "1744786075560",
+      "userId": "system",
+      "action": "QUIZ_SUBMISSION",
+      "details": {
+        "studentId": "Wael",
+        "score": "5/5",
+        "percentage": "100.0%",
+        "completed": true,
+        "timeRemaining": 1472,
+        "newAchievements": [
+          1,
+          3,
+          2
+        ]
+      },
+      "timestamp": "2025-04-16T06:47:55.560Z",
+      "ipAddress": "",
+      "userAgent": ""
+    },
+    {
+      "id": "1744787474376",
+      "userId": "system",
+      "action": "QUIZ_SUBMISSION",
+      "details": {
+        "studentId": "yaser",
+        "score": "0/5",
+        "percentage": "0.0%",
+        "completed": false,
+        "timeRemaining": 1492,
+        "newAchievements": [
+          1,
+          2
+        ]
+      },
+      "timestamp": "2025-04-16T07:11:14.376Z",
+      "ipAddress": "",
+      "userAgent": ""
+    },
+    {
+      "id": "1744793601656",
+      "userId": "system",
+      "action": "QUIZ_SUBMISSION",
+      "details": {
+        "studentId": "Tamer",
+        "score": "4/5",
+        "percentage": "80.0%",
+        "completed": true,
+        "timeRemaining": 1483,
+        "newAchievements": [
+          1,
+          2
+        ]
+      },
+      "timestamp": "2025-04-16T08:53:21.656Z",
+      "ipAddress": "",
+      "userAgent": ""
     }
   ],
   "achievements": [
@@ -587,7 +848,7 @@
       "conditions": {
         "quizzes_completed": 1
       },
-      "earnedCount": 245
+      "earnedCount": 250
     },
     {
       "id": 2,
@@ -597,7 +858,7 @@
       "conditions": {
         "time_remaining_percent": 50
       },
-      "earnedCount": 156
+      "earnedCount": 160
     },
     {
       "id": 3,
@@ -607,7 +868,7 @@
       "conditions": {
         "score_percent": 100
       },
-      "earnedCount": 89
+      "earnedCount": 91
     },
     {
       "id": 4,
@@ -629,6 +890,41 @@
         "min_quizzes": 10
       },
       "earnedCount": 67
+    },
+    {
+      "id": 6,
+      "name": "Excellence Badge",
+      "description": "Score 90% or higher on any quiz",
+      "icon": "award",
+      "isActive": true,
+      "conditions": {
+        "score_percent": 90
+      },
+      "earnedCount": 1
     }
-  ]
+  ],
+  "userAchievements": {
+    "Peter": [
+      1,
+      6
+    ],
+    "Sam": [
+      1,
+      3,
+      2
+    ],
+    "Wael": [
+      1,
+      3,
+      2
+    ],
+    "yaser": [
+      1,
+      2
+    ],
+    "Tamer": [
+      1,
+      2
+    ]
+  }
 }

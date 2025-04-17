@@ -8,7 +8,7 @@ import {
   ArcElement,
   Title,
   Tooltip,
-  Legend,
+  Legend
 } from 'chart.js';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
 
@@ -33,14 +33,13 @@ interface ChartProps {
 
 export const LineChart = ({ data, xAxis = 'date', yAxis = 'value', height = 300 }: ChartProps) => {
   const chartData = {
-    labels: data.map(d => d[xAxis]),
+    labels: data.map(d => new Date(d[xAxis]).toLocaleDateString()),
     datasets: [{
-      label: yAxis,
+      label: 'Performance',
       data: data.map(d => d[yAxis]),
-      borderColor: 'rgb(76, 201, 240)',
-      backgroundColor: 'rgba(76, 201, 240, 0.1)',
-      tension: 0.1,
-      fill: true
+      borderColor: 'rgb(99, 102, 241)',
+      backgroundColor: 'rgba(99, 102, 241, 0.5)',
+      tension: 0.3,
     }]
   };
 
@@ -82,12 +81,12 @@ export const BarChart = ({ data, xAxis = 'score', yAxis = 'count', height = 300 
   const chartData = {
     labels: data.map(d => `${d[xAxis]}%`),
     datasets: [{
-      label: yAxis,
+      label: 'Number of Students',
       data: data.map(d => d[yAxis]),
-      backgroundColor: 'rgba(76, 201, 240, 0.5)',
-      borderColor: 'rgb(76, 201, 240)',
+      backgroundColor: 'rgba(99, 102, 241, 0.5)',
+      borderColor: 'rgb(99, 102, 241)',
       borderWidth: 1,
-      borderRadius: 4
+      borderRadius: 4,
     }]
   };
 
@@ -96,7 +95,11 @@ export const BarChart = ({ data, xAxis = 'score', yAxis = 'count', height = 300 
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        display: false
+        position: 'top' as const,
+      },
+      tooltip: {
+        mode: 'index' as const,
+        intersect: false,
       }
     },
     scales: {
@@ -122,24 +125,21 @@ export const BarChart = ({ data, xAxis = 'score', yAxis = 'count', height = 300 
 };
 
 export const DoughnutChart = ({ data, height = 300 }: ChartProps) => {
+  const colors = [
+    'rgba(99, 102, 241, 0.7)',
+    'rgba(76, 201, 240, 0.7)',
+    'rgba(67, 97, 238, 0.7)',
+    'rgba(123, 44, 191, 0.7)',
+    'rgba(45, 198, 83, 0.7)',
+    'rgba(255, 145, 77, 0.7)'
+  ];
+
   const chartData = {
     labels: data.map(d => d.label),
     datasets: [{
       data: data.map(d => d.value),
-      backgroundColor: [
-        'rgba(76, 201, 240, 0.7)',
-        'rgba(67, 97, 238, 0.7)',
-        'rgba(123, 44, 191, 0.7)',
-        'rgba(45, 198, 83, 0.7)',
-        'rgba(255, 145, 77, 0.7)'
-      ],
-      borderColor: [
-        'rgb(76, 201, 240)',
-        'rgb(67, 97, 238)',
-        'rgb(123, 44, 191)',
-        'rgb(45, 198, 83)',
-        'rgb(255, 145, 77)'
-      ],
+      backgroundColor: colors,
+      borderColor: colors.map(c => c.replace('0.7', '1')),
       borderWidth: 1
     }]
   };
